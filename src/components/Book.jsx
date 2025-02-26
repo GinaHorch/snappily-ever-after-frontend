@@ -1,5 +1,9 @@
+import { useState, useEffect, useRef } from 'react';
 import HTMLFlipBook from 'react-pageflip';
 import styled from 'styled-components';
+import LoginForm from './LoginForm';
+import PhotoUpload from './PhotoUpload';
+import GalleryGrid from './GalleryGrid';
 
 const PageContainer = styled.div`
   background-color: #fff;
@@ -13,6 +17,7 @@ const PageContainer = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  position: relative;
 `;
 
 const BookContainer = styled.div`
@@ -23,21 +28,178 @@ const BookContainer = styled.div`
   padding: 20px;
 `;
 
+const CoverContent = styled.div`
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  
+  /* Prevent page turning when interacting with the form */
+  .login-area {
+    pointer-events: auto;
+    z-index: 2;
+  }
+`;
+
+const PageContent = styled.div`
+  opacity: ${props => props.$isAuthenticated ? 1 : 0};
+  transition: opacity 0.3s ease;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 20px;
+  overflow-y: auto;
+`;
+
+const PageTitle = styled.h2`
+  margin-bottom: 20px;
+  font-family: 'Playfair Display', serif;
+  color: #2c3e50;
+`;
+
+const EmptyMessage = styled.p`
+  text-align: center;
+  color: #95a5a6;
+  font-style: italic;
+  margin-top: 40px;
+`;
+
+const PageNumber = styled.div`
+  position: absolute;
+  bottom: 20px;
+  font-family: 'Playfair Display', serif;
+  color: #95a5a6;
+  font-size: 0.9em;
+  width: 100%;
+  text-align: center;
+`;
+
+const TurnPageHint = styled.div`
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(44, 62, 80, 0.8);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-size: 0.9em;
+  opacity: ${props => props.$show ? 1 : 0};
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+`;
+
+const NavigationButtons = styled.div`
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 20px;
+  z-index: 1000;
+`;
+
+const NavButton = styled.button`
+  background: rgba(44, 62, 80, 0.8);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Lato', sans-serif;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background: rgba(44, 62, 80, 1);
+  }
+
+  &:disabled {
+    background: rgba(44, 62, 80, 0.4);
+    cursor: not-allowed;
+  }
+`;
+
 const Page = ({ number, children }) => {
   return (
     <PageContainer>
       {children}
-      <div style={{ position: 'absolute', bottom: '10px', right: '10px' }}>
-        {number}
-      </div>
+      {number && <PageNumber>{number}</PageNumber>}
     </PageContainer>
   );
 };
 
 const Book = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [submissions, setSubmissions] = useState([]);
+  const [showHint, setShowHint] = useState(true);
+  const [page, setPage] = useState(0);
+  const bookRef = useRef(null);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      const timer = setTimeout(() => {
+        setShowHint(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthenticated]);
+
+  // Add keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!isAuthenticated) return;
+      
+      if (e.key === 'ArrowRight') {
+        nextPage();
+      } else if (e.key === 'ArrowLeft') {
+        prevPage();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isAuthenticated]);
+
+  const handleLogin = () => {
+    setIsAuthenticated(true);
+  };
+
+  const handleSubmission = (submission) => {
+    setSubmissions(prev => [...prev, submission]);
+    console.log('New submission:', submission);
+  };
+
+  const nextPage = () => {
+    if (bookRef.current) {
+      console.log('Attempting to flip to next page');
+      bookRef.current.pageFlip().flipNext();
+    }
+  };
+
+  const prevPage = () => {
+    if (bookRef.current) {
+      console.log('Attempting to flip to previous page');
+      bookRef.current.pageFlip().flipPrev();
+    }
+  };
+
+  const onFlip = (e) => {
+    console.log('Page flipped to:', e.data);
+    setPage(e.data);
+  };
+
+  const photoSubmissions = submissions.filter(sub => sub.image);
+  const messageSubmissions = submissions.filter(sub => sub.message);
+
   return (
     <BookContainer>
       <HTMLFlipBook
+        ref={bookRef}
         width={550}
         height={733}
         size="stretch"
@@ -49,35 +211,101 @@ const Book = () => {
         showCover={true}
         mobileScrollSupport={true}
         className="demo-book"
+        disabled={!isAuthenticated}
+        flippingTime={1000}
+        useMouseEvents={true}
+        swipeDistance={30}
+        clickEventForward={!isAuthenticated}
+        usePortrait={true}
+        startPage={0}
+        onFlip={onFlip}
+        drawShadow={true}
+        autoSize={true}
+        renderOnlyPageLengthChange={false}
       >
-        {/* Cover */}
-        <Page number="">
-          <h1>Katie's Wedding</h1>
-          <p>Guest Book & Photo Album</p>
-        </Page>
+        <div className="page">
+          <Page number="">
+            <CoverContent>
+              <h1>Katie & Alex's Wedding</h1>
+              <p>Guest Book & Photo Album</p>
+              {!isAuthenticated && (
+                <div className="login-area" onClick={(e) => e.stopPropagation()}>
+                  <LoginForm onLogin={handleLogin} />
+                </div>
+              )}
+            </CoverContent>
+          </Page>
+        </div>
 
-        {/* Inside pages */}
-        <Page number="1">
-          <h2>Welcome to Our Wedding</h2>
-          <p>Share your messages and photos with us</p>
-        </Page>
+        <div className="page">
+          <Page number="1">
+            <PageContent $isAuthenticated={isAuthenticated}>
+              <PageTitle>Share Your Memory</PageTitle>
+              <PhotoUpload onSubmit={handleSubmission} />
+            </PageContent>
+          </Page>
+        </div>
 
-        <Page number="2">
-          <h2>Photo Gallery</h2>
-          <p>Your memories will appear here</p>
-        </Page>
+        <div className="page">
+          <Page number="2">
+            <PageContent $isAuthenticated={isAuthenticated}>
+              <PageTitle>Photo Gallery</PageTitle>
+              {photoSubmissions.length > 0 ? (
+                <GalleryGrid 
+                  submissions={photoSubmissions} 
+                />
+              ) : (
+                <EmptyMessage>No photos have been shared yet. Be the first!</EmptyMessage>
+              )}
+            </PageContent>
+          </Page>
+        </div>
 
-        <Page number="3">
-          <h2>Guest Messages</h2>
-          <p>Your wishes will appear here</p>
-        </Page>
+        <div className="page">
+          <Page number="3">
+            <PageContent $isAuthenticated={isAuthenticated}>
+              <PageTitle>Guest Messages</PageTitle>
+              {messageSubmissions.length > 0 ? (
+                <GalleryGrid 
+                  submissions={messageSubmissions}
+                />
+              ) : (
+                <EmptyMessage>No messages have been shared yet. Be the first!</EmptyMessage>
+              )}
+            </PageContent>
+          </Page>
+        </div>
 
-        {/* Back cover */}
-        <Page number="">
-          <h2>Thank You</h2>
-          <p>For being part of our special day</p>
-        </Page>
+        <div className="page">
+          <Page number="">
+            <PageContent $isAuthenticated={isAuthenticated}>
+              <PageTitle>Thank You</PageTitle>
+              <p>For being part of our special day</p>
+            </PageContent>
+          </Page>
+        </div>
       </HTMLFlipBook>
+      {isAuthenticated && (
+        <>
+          <TurnPageHint $show={showHint}>
+            Use arrow keys or buttons below to turn pages
+          </TurnPageHint>
+          <NavigationButtons>
+            <NavButton 
+              onClick={prevPage} 
+              disabled={page === 0}
+            >
+              ← Previous Page
+            </NavButton>
+            <NavButton 
+              onClick={nextPage}
+              disabled={page === 4}
+            >
+              Next Page →
+            </NavButton>
+          </NavigationButtons>
+        </>
+      )}
     </BookContainer>
   );
 };
