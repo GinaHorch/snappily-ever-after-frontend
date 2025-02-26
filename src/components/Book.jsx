@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import HTMLFlipBook from 'react-pageflip';
 import styled from 'styled-components';
+import Confetti from 'react-confetti';
 import LoginForm from './LoginForm';
 import PhotoUpload from './PhotoUpload';
 import GalleryGrid from './GalleryGrid';
@@ -36,11 +37,20 @@ const CoverContent = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  position: relative;
   
-  /* Prevent page turning when interacting with the form */
+  h1, p {
+    pointer-events: none;
+  }
+  
   .login-area {
-    pointer-events: auto;
-    z-index: 2;
+    position: relative;
+    z-index: 1000;
+    width: 100%;
+    max-width: 300px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 20px;
+    border-radius: 8px;
   }
 `;
 
@@ -138,12 +148,24 @@ const Book = () => {
   const [submissions, setSubmissions] = useState([]);
   const [showHint, setShowHint] = useState(true);
   const [page, setPage] = useState(0);
+  const [showConfetti, setShowConfetti] = useState(false);
   const bookRef = useRef(null);
 
   useEffect(() => {
     if (isAuthenticated) {
       const timer = setTimeout(() => {
         setShowHint(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthenticated]);
+
+  // Add confetti effect
+  useEffect(() => {
+    if (isAuthenticated) {
+      setShowConfetti(true);
+      const timer = setTimeout(() => {
+        setShowConfetti(false);
       }, 5000);
       return () => clearTimeout(timer);
     }
@@ -198,6 +220,15 @@ const Book = () => {
 
   return (
     <BookContainer>
+      {showConfetti && (
+        <Confetti
+          width={window.innerWidth}
+          height={window.innerHeight}
+          numberOfPieces={200}
+          recycle={false}
+          colors={['#FFD700', '#FFA500', '#FF69B4', '#87CEEB', '#98FB98']}
+        />
+      )}
       <HTMLFlipBook
         ref={bookRef}
         width={550}
@@ -209,13 +240,13 @@ const Book = () => {
         maxHeight={1533}
         maxShadowOpacity={0.5}
         showCover={true}
-        mobileScrollSupport={true}
+        mobileScrollSupport={isAuthenticated}
         className="demo-book"
-        disabled={!isAuthenticated}
+        disabled={true}
         flippingTime={1000}
-        useMouseEvents={true}
-        swipeDistance={30}
-        clickEventForward={!isAuthenticated}
+        useMouseEvents={false}
+        swipeDistance={0}
+        clickEventForward={false}
         usePortrait={true}
         startPage={0}
         onFlip={onFlip}
@@ -229,7 +260,9 @@ const Book = () => {
               <h1>Katie & Alex's Wedding</h1>
               <p>Guest Book & Photo Album</p>
               {!isAuthenticated && (
-                <div className="login-area" onClick={(e) => e.stopPropagation()}>
+                <div 
+                  className="login-area"
+                >
                   <LoginForm onLogin={handleLogin} />
                 </div>
               )}
