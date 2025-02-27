@@ -1,4 +1,7 @@
+import { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import { galleryService } from '../services/gallery';
+import { authService } from '../services/auth';
 
 const Grid = styled.div`
   display: grid;
@@ -95,37 +98,90 @@ const Timestamp = styled.span`
   color: #95a5a6;
 `;
 
-const GalleryGrid = ({ submissions }) => {
-  const formatDate = (timestamp) => {
-    return new Date(timestamp).toLocaleDateString('en-AU', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+const DeleteButton = styled.button`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(231, 76, 60, 0.9);
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8em;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+
+  ${Card}:hover & {
+    opacity: 1;
+  }
+`;
+
+const LoadingSpinner = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  width: 100%;
+`;
+
+const ErrorMessage = styled.div`
+  color: #e74c3c;
+  text-align: center;
+  padding: 20px;
+`;
+
+const GalleryGrid = () => {
+  const [submissions, setSubmissions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const isAdmin = authService.isAdmin();
+
+  useEffect(() => {
+    fetchSubmissions();
+  }, []);
+
+  const fetchSubmissions = async () => {
+    try {
+      setLoading(true);
+      const data = await galleryService.getAllImages();
+      setSubmissions(data);
+      setError(null);
+    } catch (err) {
+      setError('Failed to load images. Please try again later.');
+      console.error('Error fetching submissions:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDownload = async (image, guestName) => {
-    try {
-      let url;
-      if (typeof image === 'string') {
-        // If image is an S3 URL (when backend is connected)
-        url = image;
-      } else {
-        // For local File objects (current implementation)
-        url = URL.createObjectURL(image);
+  const handleDelete = async (imageId) => {
+    if (!isAdmin) return;
+    
+    if (window.confirm('Are you sure you want to delete this image?')) {
+      try {
+        await galleryService.deleteImage(imageId);
+        // Refresh the gallery
+        fetchSubmissions();
+      } catch (err) {
+        console.error('Error deleting image:', err);
+        alert('Failed to delete image. Please try again.');
       }
+    }
+  };
 
-      const response = await fetch(url);
+  const handleDownload = async (imageUrl, name) => {
+    try {
+      const response = await fetch(imageUrl);
       const blob = await response.blob();
       const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = downloadUrl;
       
-      // Create filename from guest name and timestamp
+      // Create filename from name and timestamp
       const timestamp = new Date().toISOString().split('T')[0];
-      const fileName = `${guestName.replace(/\s+/g, '_')}_${timestamp}.jpg`;
+      const fileName = `${name.replace(/\s+/g, '_')}_${timestamp}.jpg`;
       
       link.setAttribute('download', fileName);
       document.body.appendChild(link);
@@ -138,19 +194,32 @@ const GalleryGrid = ({ submissions }) => {
     }
   };
 
+  if (loading) {
+    return <LoadingSpinner>Loading...</LoadingSpinner>;
+  }
+
+  if (error) {
+    return <ErrorMessage>{error}</ErrorMessage>;
+  }
+
   return (
     <Grid>
-      {submissions.map((submission, index) => (
-        <Card key={index}>
-          {submission.image && (
+      {submissions.map((submission) => (
+        <Card key={submission.id}>
+          {isAdmin && (
+            <DeleteButton onClick={() => handleDelete(submission.id)}>
+              Delete
+            </DeleteButton>
+          )}
+          {submission.image_url && (
             <ImageContainer>
               <Image 
-                src={URL.createObjectURL(submission.image)} 
-                alt={`Photo by ${submission.guestName}`} 
+                src={submission.image_url} 
+                alt={`Photo by ${submission.name}`} 
               />
               <ImageOverlay className="overlay">
                 <DownloadButton
-                  onClick={() => handleDownload(submission.image, submission.guestName)}
+                  onClick={() => handleDownload(submission.image_url, submission.name)}
                 >
                   Download Photo
                 </DownloadButton>
@@ -158,11 +227,19 @@ const GalleryGrid = ({ submissions }) => {
             </ImageContainer>
           )}
           <MessageContent>
-            <GuestName>{submission.guestName}</GuestName>
+            <GuestName>{submission.name}</GuestName>
             {submission.message && (
               <Message>{submission.message}</Message>
             )}
-            <Timestamp>{formatDate(submission.timestamp)}</Timestamp>
+            <Timestamp>
+              {new Date(submission.uploaded_at).toLocaleDateString('en-AU', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
+            </Timestamp>
           </MessageContent>
         </Card>
       ))}

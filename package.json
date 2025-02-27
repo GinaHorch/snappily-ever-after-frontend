@@ -10,13 +10,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "axios": "^1.7.9",
+    "axios": "^1.8.1",
     "dotenv": "^16.4.7",
     "react": "^19.0.0",
     "react-confetti": "^6.2.3",
     "react-dom": "^19.0.0",
     "react-dropzone": "^14.3.8",
     "react-pageflip": "^2.0.3",
+    "react-router-dom": "^7.2.0",
     "react-share": "^5.2.2",
     "styled-components": "^6.1.15"
   },

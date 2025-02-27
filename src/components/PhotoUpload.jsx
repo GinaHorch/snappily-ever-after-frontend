@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import styled from 'styled-components';
+import { galleryService } from '../services/gallery';
 
 const UploadContainer = styled.div`
   width: 100%;
@@ -98,12 +99,13 @@ const ErrorMessage = styled.p`
   margin-top: 5px;
 `;
 
-const PhotoUpload = ({ onSubmit }) => {
+const PhotoUpload = ({ onSuccess }) => {
   const [guestName, setGuestName] = useState('');
   const [message, setMessage] = useState('');
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState('');
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const onDrop = useCallback((acceptedFiles) => {
     const file = acceptedFiles[0];
@@ -126,7 +128,7 @@ const PhotoUpload = ({ onSubmit }) => {
     maxFiles: 1
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!guestName.trim()) {
       setError('Please enter your name');
@@ -137,19 +139,42 @@ const PhotoUpload = ({ onSubmit }) => {
       return;
     }
 
-    onSubmit({
-      guestName,
-      message,
-      image,
-      timestamp: new Date().toISOString()
-    });
-
-    // Reset form
-    setGuestName('');
-    setMessage('');
-    setImage(null);
-    setPreview('');
+    setIsSubmitting(true);
     setError('');
+
+    try {
+      if (image) {
+        // Upload image with message
+        await galleryService.uploadImage({
+          imageFile: image,
+          caption: message,
+          message: message,
+          name: guestName
+        });
+      } else {
+        // Add message without image
+        // Note: This might need to be adjusted based on your backend implementation
+        await galleryService.uploadImage({
+          message: message,
+          name: guestName
+        });
+      }
+
+      // Reset form
+      setGuestName('');
+      setMessage('');
+      setImage(null);
+      setPreview('');
+      
+      // Notify parent component of success
+      if (onSuccess) {
+        onSuccess();
+      }
+    } catch (err) {
+      setError(err.error || 'Failed to upload. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -161,16 +186,18 @@ const PhotoUpload = ({ onSubmit }) => {
           value={guestName}
           onChange={(e) => setGuestName(e.target.value)}
           required
+          disabled={isSubmitting}
         />
 
         <TextArea
           placeholder="Write your message here..."
           value={message}
           onChange={(e) => setMessage(e.target.value)}
+          disabled={isSubmitting}
         />
 
-        <DropZone {...getRootProps()}>
-          <input {...getInputProps()} />
+        <DropZone {...getRootProps()} style={{ opacity: isSubmitting ? 0.5 : 1 }}>
+          <input {...getInputProps()} disabled={isSubmitting} />
           {isDragActive ? (
             <p>Drop your photo here...</p>
           ) : (
@@ -186,8 +213,8 @@ const PhotoUpload = ({ onSubmit }) => {
 
         {error && <ErrorMessage>{error}</ErrorMessage>}
 
-        <Button type="submit">
-          Share Your Memory
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Sharing...' : 'Share Your Memory'}
         </Button>
       </Form>
     </UploadContainer>
