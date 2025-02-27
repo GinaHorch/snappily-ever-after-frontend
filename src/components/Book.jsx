@@ -1,45 +1,23 @@
-import HTMLFlipBook from 'react-pageflip';
-import styled from 'styled-components';
-
-const PageContainer = styled.div`
-  background-color: #fff;
-  border: 1px solid #c2c2c2;
-  border-radius: 0 10px 10px 0;
-  box-shadow: inset -7px 0 30px -7px rgba(0,0,0,0.4);
-  height: 100%;
-  width: 100%;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-`;
-
-const BookContainer = styled.div`
-  width: 90vw;
-  height: 90vh;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-`;
+import HTMLFlipBook from "react-pageflip";
+import "./Book.css";
 
 const Page = ({ number, children }) => {
   return (
-    <PageContainer>
+    <div class="PageContainer">
       {children}
-      <div style={{ position: 'absolute', bottom: '10px', right: '10px' }}>
+      <div style={{ position: "absolute", bottom: "10px", right: "10px" }}>
         {number}
       </div>
-    </PageContainer>
+    </div>
   );
 };
 
 const Book = () => {
   return (
-    <BookContainer>
-      <HTMLFlipBook
+    <div class="BookContainer">
+      {/* <HTMLFlipBook
         width={550}
-        height={733}
+        height={400}
         size="stretch"
         minWidth={315}
         maxWidth={1000}
@@ -48,38 +26,33 @@ const Book = () => {
         maxShadowOpacity={0.5}
         showCover={true}
         mobileScrollSupport={true}
-        className="demo-book"
-      >
-        {/* Cover */}
-        <Page number="">
-          <h1>Katie's Wedding</h1>
-          <p>Guest Book & Photo Album</p>
-        </Page>
-
-        {/* Inside pages */}
-        <Page number="1">
-          <h2>Welcome to Our Wedding</h2>
-          <p>Share your messages and photos with us</p>
-        </Page>
-
-        <Page number="2">
-          <h2>Photo Gallery</h2>
-          <p>Your memories will appear here</p>
-        </Page>
-
-        <Page number="3">
-          <h2>Guest Messages</h2>
-          <p>Your wishes will appear here</p>
-        </Page>
-
-        {/* Back cover */}
-        <Page number="">
-          <h2>Thank You</h2>
-          <p>For being part of our special day</p>
-        </Page>
-      </HTMLFlipBook>
-    </BookContainer>
+        className="demo-book" */}
+      {/* Cover */}
+      <div className="PageContainer" number="">
+        <h1>Katie's Wedding</h1>
+        <p>Guest Book & Photo Album</p>
+      </div>
+      {/* Inside pages */}
+      <Page number="1">
+        <h2>Welcome to Our Wedding</h2>
+        <p>Share your messages and photos with us</p>
+      </Page>
+      <Page number="2">
+        <h2>Photo Gallery</h2>
+        <p>Your memories will appear here</p>
+      </Page>
+      <Page number="3">
+        <h2>Guest Messages</h2>
+        <p>Your wishes will appear here</p>
+      </Page>
+      {/* Back cover */}
+      <Page number="">
+        <h2>Thank You</h2>
+        <p>For being part of our special day</p>
+      </Page>
+      {/* </HTMLFlipBook> */}
+    </div>
   );
 };
 
-export default Book; 
+export default Book;

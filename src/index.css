@@ -1,8 +1,14 @@
+@import url("https://fonts.googleapis.com/css2?family=Sigmar&display=swap");
+
+* {
+  font-family: "Sigmar", serif;
+}
+
 :root {
-  font-family: 'Playfair Display', serif;
+  font-family: "Sigmar", serif;
   line-height: 1.5;
   font-weight: 400;
-  
+
   color: #333;
   background-color: #f5f7fa;
 
@@ -30,8 +36,10 @@ body {
 }
 
 /* Add a nice font for headings */
-h1, h2, h3 {
-  font-family: 'Playfair Display', serif;
+h1,
+h2,
+h3 {
+  font-family: "Sigmar", serif;
   color: #2c3e50;
 }
 
@@ -46,7 +54,7 @@ h2 {
 }
 
 p {
-  font-family: 'Lato', sans-serif;
+  font-family: "Lato", sans-serif;
   line-height: 1.6;
   color: #34495e;
 }
