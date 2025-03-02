@@ -14,10 +14,10 @@ const FormContainer = styled.form`
 const Input = styled.input`
   width: 100%;
   padding: 12px;
-  border: 2px solid #e0e0e0;
+  border: 2px solid #2e6f40;
   border-radius: 8px;
   font-size: 16px;
-  font-family: 'Lato', sans-serif;
+  font-family: "Lato", sans-serif;
   transition: border-color 0.3s ease;
 
   &:focus {
@@ -29,12 +29,12 @@ const Input = styled.input`
 const Button = styled.button`
   width: 100%;
   padding: 12px;
-  background-color: #2c3e50;
+  background-color: #2E6F40;
   color: white;
   border: none;
   border-radius: 8px;
   font-size: 16px;
-  font-family: 'Lato', sans-serif;
+  font-family: "Lato", sans-serif;
   cursor: pointer;
   transition: background-color 0.3s ease;
 

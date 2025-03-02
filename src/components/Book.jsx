@@ -1,24 +1,61 @@
-import { useState, useEffect, useRef } from 'react';
-import HTMLFlipBook from 'react-pageflip';
-import styled from 'styled-components';
-import Confetti from 'react-confetti';
-import LoginForm from './LoginForm';
-import PhotoUpload from './PhotoUpload';
-import GalleryGrid from './GalleryGrid';
+import { useState, useEffect, useRef } from "react";
+import HTMLFlipBook from "react-pageflip";
+import styled from "styled-components";
+import Confetti from "react-confetti";
+import LoginForm from "./LoginForm";
+import PhotoUpload from "./PhotoUpload";
+import GalleryGrid from "./GalleryGrid";
 
 const PageContainer = styled.div`
-  background-color: #fff;
+  background-color: #9daf89;
   border: 1px solid #c2c2c2;
   border-radius: 0 10px 10px 0;
-  box-shadow: inset -7px 0 30px -7px rgba(0,0,0,0.4);
+  box-shadow: inset -7px 0 30px -7px rgba(0, 0, 0, 0.4);
   height: 100%;
   width: 100%;
-  padding: 20px;
+  padding: 1cm; /* Adding 1cm padding inside */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   position: relative;
+
+  /* White decorative border inside the PageContainer */
+  &::before {
+    content: "";
+    position: absolute;
+    top: 1cm; /* 1cm inside from the top */
+    left: 1cm; /* 1cm inside from the left */
+    right: 1cm; /* 1cm inside from the right */
+    bottom: 1cm; /* 1cm inside from the bottom */
+    border: 2px solid white; /* White decorative border */
+    border-radius: 20px; /* Rounded corners for the inner border */
+    pointer-events: none; /* Prevent interaction with the border */
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.6); /* Optional glow effect */
+
+    /* Adding a flourish effect at the corners */
+    border-top-left-radius: 30px; /* More emphasis on this corner */
+    border-top-right-radius: 30px; /* More emphasis on this corner */
+    border-bottom-left-radius: 30px; /* More emphasis on this corner */
+    border-bottom-right-radius: 30px; /* More emphasis on this corner */
+  }
+
+  /* Book spine effect */
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -15px; /* Moves the spine slightly outside the container */
+    width: 20px; /* Width of the spine */
+    height: 100%;
+    background: #6e7e4e; /* Color of the book spine */
+    border-radius: 5px; /* Slight rounding on the spine */
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3); /* Shadow to simulate depth */
+  }
+
+  /* Optional: Adding a slight shadow to the page to enhance the closed book effect */
+  box-shadow: inset -7px 0 30px -7px rgba(0, 0, 0, 0.4),
+    3px 0 10px rgba(0, 0, 0, 0.2);
 `;
 
 const BookContainer = styled.div`
@@ -38,24 +75,44 @@ const CoverContent = styled.div`
   align-items: center;
   justify-content: center;
   position: relative;
-  
-  h1, p {
+
+  h1 {
     pointer-events: none;
+    color: white;
+    font: "Parisienne";
+    font-weight: bold;
+    font-size: 60px;
+    margin-bottom: 0px;
   }
-  
+
+  p {
+    pointer-events: none;
+    color: #2e6f40;
+    font-weight: bold;
+    font-size: 20px;
+    margin-top: 0px;
+  }
+
+  img {
+    margin-top: 2px; /* Add margin to space the image away from the text */
+    margin-bottom: -50px;
+    max-width: 80%; /* Ensures the image isn't too large */
+    height: 350px; /* Keeps the image's aspect ratio */
+  }
+
   .login-area {
     position: relative;
     z-index: 1000;
     width: 100%;
     max-width: 300px;
-    background: rgba(255, 255, 255, 0.95);
+    background: #9daf89;
     padding: 20px;
     border-radius: 8px;
   }
 `;
 
 const PageContent = styled.div`
-  opacity: ${props => props.$isAuthenticated ? 1 : 0};
+  opacity: ${(props) => (props.$isAuthenticated ? 1 : 0)};
   transition: opacity 0.3s ease;
   width: 100%;
   height: 100%;
@@ -69,7 +126,7 @@ const PageContent = styled.div`
 
 const PageTitle = styled.h2`
   margin-bottom: 20px;
-  font-family: 'Playfair Display', serif;
+  font-family: "Playfair Display", serif;
   color: #2c3e50;
 `;
 
@@ -83,7 +140,7 @@ const EmptyMessage = styled.p`
 const PageNumber = styled.div`
   position: absolute;
   bottom: 20px;
-  font-family: 'Playfair Display', serif;
+  font-family: "Playfair Display", serif;
   color: #95a5a6;
   font-size: 0.9em;
   width: 100%;
@@ -99,7 +156,7 @@ const TurnPageHint = styled.div`
   padding: 10px 15px;
   border-radius: 8px;
   font-size: 0.9em;
-  opacity: ${props => props.$show ? 1 : 0};
+  opacity: ${(props) => (props.$show ? 1 : 0)};
   transition: opacity 0.3s ease;
   pointer-events: none;
 `;
@@ -121,7 +178,7 @@ const NavButton = styled.button`
   padding: 10px 20px;
   border-radius: 8px;
   cursor: pointer;
-  font-family: 'Lato', sans-serif;
+  font-family: "Lato", sans-serif;
   transition: background-color 0.3s ease;
 
   &:hover {
@@ -175,16 +232,16 @@ const Book = () => {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (!isAuthenticated) return;
-      
-      if (e.key === 'ArrowRight') {
+
+      if (e.key === "ArrowRight") {
         nextPage();
-      } else if (e.key === 'ArrowLeft') {
+      } else if (e.key === "ArrowLeft") {
         prevPage();
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isAuthenticated]);
 
   const handleLogin = () => {
@@ -192,31 +249,31 @@ const Book = () => {
   };
 
   const handleSubmission = (submission) => {
-    setSubmissions(prev => [...prev, submission]);
-    console.log('New submission:', submission);
+    setSubmissions((prev) => [...prev, submission]);
+    console.log("New submission:", submission);
   };
 
   const nextPage = () => {
     if (bookRef.current) {
-      console.log('Attempting to flip to next page');
+      console.log("Attempting to flip to next page");
       bookRef.current.pageFlip().flipNext();
     }
   };
 
   const prevPage = () => {
     if (bookRef.current) {
-      console.log('Attempting to flip to previous page');
+      console.log("Attempting to flip to previous page");
       bookRef.current.pageFlip().flipPrev();
     }
   };
 
   const onFlip = (e) => {
-    console.log('Page flipped to:', e.data);
+    console.log("Page flipped to:", e.data);
     setPage(e.data);
   };
 
-  const photoSubmissions = submissions.filter(sub => sub.image);
-  const messageSubmissions = submissions.filter(sub => sub.message);
+  const photoSubmissions = submissions.filter((sub) => sub.image);
+  const messageSubmissions = submissions.filter((sub) => sub.message);
 
   return (
     <BookContainer>
@@ -226,7 +283,7 @@ const Book = () => {
           height={window.innerHeight}
           numberOfPieces={200}
           recycle={false}
-          colors={['#FFD700', '#FFA500', '#FF69B4', '#87CEEB', '#98FB98']}
+          colors={["#FFD700", "#FFA500", "#FF69B4", "#87CEEB", "#98FB98"]}
         />
       )}
       <HTMLFlipBook
@@ -257,12 +314,11 @@ const Book = () => {
         <div className="page">
           <Page number="">
             <CoverContent>
-              <h1>Katie & Alex's Wedding</h1>
-              <p>Guest Book & Photo Album</p>
+              <h1>Katie & Alex</h1>
+              <p>Wedding Guest Book & Photo Album</p>
+              <img src="/images/cat_wedding.png" alt="Wedding image" />
               {!isAuthenticated && (
-                <div 
-                  className="login-area"
-                >
+                <div className="login-area">
                   <LoginForm onLogin={handleLogin} />
                 </div>
               )}
@@ -284,11 +340,11 @@ const Book = () => {
             <PageContent $isAuthenticated={isAuthenticated}>
               <PageTitle>Photo Gallery</PageTitle>
               {photoSubmissions.length > 0 ? (
-                <GalleryGrid 
-                  submissions={photoSubmissions} 
-                />
+                <GalleryGrid submissions={photoSubmissions} />
               ) : (
-                <EmptyMessage>No photos have been shared yet. Be the first!</EmptyMessage>
+                <EmptyMessage>
+                  No photos have been shared yet. Be the first!
+                </EmptyMessage>
               )}
             </PageContent>
           </Page>
@@ -299,11 +355,11 @@ const Book = () => {
             <PageContent $isAuthenticated={isAuthenticated}>
               <PageTitle>Guest Messages</PageTitle>
               {messageSubmissions.length > 0 ? (
-                <GalleryGrid 
-                  submissions={messageSubmissions}
-                />
+                <GalleryGrid submissions={messageSubmissions} />
               ) : (
-                <EmptyMessage>No messages have been shared yet. Be the first!</EmptyMessage>
+                <EmptyMessage>
+                  No messages have been shared yet. Be the first!
+                </EmptyMessage>
               )}
             </PageContent>
           </Page>
@@ -324,16 +380,10 @@ const Book = () => {
             Use arrow keys or buttons below to turn pages
           </TurnPageHint>
           <NavigationButtons>
-            <NavButton 
-              onClick={prevPage} 
-              disabled={page === 0}
-            >
+            <NavButton onClick={prevPage} disabled={page === 0}>
               ← Previous Page
             </NavButton>
-            <NavButton 
-              onClick={nextPage}
-              disabled={page === 4}
-            >
+            <NavButton onClick={nextPage} disabled={page === 4}>
               Next Page →
             </NavButton>
           </NavigationButtons>
@@ -343,4 +393,4 @@ const Book = () => {
   );
 };
 
-export default Book; 
+export default Book;
