@@ -13,31 +13,29 @@ const PageContainer = styled.div`
   box-shadow: inset -7px 0 30px -7px rgba(0, 0, 0, 0.4);
   height: 100%;
   width: 100%;
-  padding: 1cm; /* Adding 1cm padding inside */
+  padding: 1cm; 
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   position: relative;
 
-  /* White decorative border inside the PageContainer */
   &::before {
     content: "";
     position: absolute;
-    top: 1cm; /* 1cm inside from the top */
-    left: 1cm; /* 1cm inside from the left */
-    right: 1cm; /* 1cm inside from the right */
-    bottom: 1cm; /* 1cm inside from the bottom */
-    border: 2px solid white; /* White decorative border */
-    border-radius: 20px; /* Rounded corners for the inner border */
-    pointer-events: none; /* Prevent interaction with the border */
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.6); /* Optional glow effect */
+    top: 1cm; 
+    left: 1cm; 
+    right: 1cm; 
+    bottom: 1cm; 
+    border: 2px solid white; 
+    border-radius: 20px; 
+    pointer-events: none; 
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.6); 
 
-    /* Adding a flourish effect at the corners */
-    border-top-left-radius: 30px; /* More emphasis on this corner */
-    border-top-right-radius: 30px; /* More emphasis on this corner */
-    border-bottom-left-radius: 30px; /* More emphasis on this corner */
-    border-bottom-right-radius: 30px; /* More emphasis on this corner */
+    border-top-left-radius: 30px; 
+    border-top-right-radius: 30px; 
+    border-bottom-left-radius: 30px; 
+    border-bottom-right-radius: 30px; 
   }
 
   /* Book spine effect */
@@ -45,15 +43,14 @@ const PageContainer = styled.div`
     content: "";
     position: absolute;
     top: 0;
-    left: -15px; /* Moves the spine slightly outside the container */
-    width: 20px; /* Width of the spine */
+    left: -15px; 
+    width: 20px; 
     height: 100%;
-    background: #6e7e4e; /* Color of the book spine */
-    border-radius: 5px; /* Slight rounding on the spine */
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3); /* Shadow to simulate depth */
+    background: #6e7e4e; 
+    border-radius: 5px; 
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3); 
   }
 
-  /* Optional: Adding a slight shadow to the page to enhance the closed book effect */
   box-shadow: inset -7px 0 30px -7px rgba(0, 0, 0, 0.4),
     3px 0 10px rgba(0, 0, 0, 0.2);
 `;
@@ -94,10 +91,10 @@ const CoverContent = styled.div`
   }
 
   img {
-    margin-top: 2px; /* Add margin to space the image away from the text */
+    margin-top: 2px; /
     margin-bottom: -50px;
-    max-width: 80%; /* Ensures the image isn't too large */
-    height: 350px; /* Keeps the image's aspect ratio */
+    max-width: 80%; 
+    height: 350px; 
   }
 
   .login-area {
@@ -217,7 +214,7 @@ const Book = () => {
     }
   }, [isAuthenticated]);
 
-  // Add confetti effect
+  // confetti effect
   useEffect(() => {
     if (isAuthenticated) {
       setShowConfetti(true);

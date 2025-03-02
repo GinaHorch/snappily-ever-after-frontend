@@ -9,7 +9,7 @@ import Book from "./components/Book";
 import AdminDashboard from "./components/AdminDashboard";
 import styled from "styled-components";
 import { authService } from "./services/auth";
-import Confetti from "react-confetti"; // Importing the confetti library
+import Confetti from "react-confetti"; 
 
 const AppContainer = styled.div`
   min-height: 100vh;
@@ -18,8 +18,8 @@ const AppContainer = styled.div`
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  position: relative; /* Allow positioning of Confetti behind */
-  z-index: 1; /* Make sure AppContainer is in front of the Confetti */
+  position: relative; 
+  z-index: 1; 
 `;
 
 const AdminLink = styled(Link)`
@@ -63,7 +63,6 @@ const ProtectedRoute = ({ children }) => {
 function App() {
   const isAdmin = authService.isAdmin();
 
-  // Window dimensions for confetti to cover entire screen
   const windowWidth = window.innerWidth;
   const windowHeight = window.innerHeight;
 
