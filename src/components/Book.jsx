@@ -91,8 +91,8 @@ const CoverContent = styled.div`
   }
 
   img {
-    margin-top: 2px; /
-    margin-bottom: -50px;
+    margin-top: 0px; 
+    margin-bottom: -40px;
     max-width: 80%; 
     height: 350px; 
   }
