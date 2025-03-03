@@ -208,6 +208,22 @@ const GuestbookIcon = styled.img`
   cursor: pointer;
 `;
 
+const ThankfulIcon = styled.img`
+  width: 50px;
+  height: 50px;
+  margin-top: 10px;
+  margin-bottom: 10px; /* Space between the icon and title */
+  cursor: pointer;
+`;
+
+const MessageIcon = styled.img`
+  width: 67px;
+  height: 67px;
+  margin-top: 3px;
+  margin-bottom: 0px;
+  cursor: pointer;
+`;
+
 const Page = ({ number, isCover, children }) => {
   return (
     <PageContainer isCover={isCover}>
@@ -380,6 +396,12 @@ const Book = () => {
         <div className="page">
           <Page number="3">
             <PageContent $isAuthenticated={isAuthenticated}>
+              {/* Move the Guestbook Icon above the title */}
+              <MessageIcon
+                src="/images/message-icon.svg"
+                alt="Message Icon"
+                onClick={() => console.log("Message Icon Clicked")}
+              />
               <PageTitle isCover={false}>Guest Messages</PageTitle>
               {messageSubmissions.length > 0 ? (
                 <GalleryGrid submissions={messageSubmissions} />
@@ -395,6 +417,10 @@ const Book = () => {
         <div className="page">
           <Page number="">
             <PageContent $isAuthenticated={isAuthenticated}>
+              <ThankfulIcon
+                src="/images/thankful-icon.svg"
+                alt="Thankful Icon"
+              />
               <PageTitle isCover={false}>Thank You</PageTitle>
               <p>For being part of our special day</p>
             </PageContent>
