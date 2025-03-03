@@ -7,13 +7,14 @@ import PhotoUpload from "./PhotoUpload";
 import GalleryGrid from "./GalleryGrid";
 
 const PageContainer = styled.div`
-  background-color: #9daf89;
+  background-color: ${(props) => (props.isCover ? "#9daf89" : "#FAF9F6")};
   border: 1px solid #c2c2c2;
-  border-radius: 0 10px 10px 0;
+  border-radius: ${(props) =>
+    props.isCover ? "0 10px 10px 0" : "0"}; /* Only rounded corners on cover */
   box-shadow: inset -7px 0 30px -7px rgba(0, 0, 0, 0.4);
   height: 100%;
   width: 100%;
-  padding: 1cm; 
+  padding: 1cm;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -23,34 +24,34 @@ const PageContainer = styled.div`
   &::before {
     content: "";
     position: absolute;
-    top: 1cm; 
-    left: 1cm; 
-    right: 1cm; 
-    bottom: 1cm; 
-    border: 2px solid white; 
-    border-radius: 20px; 
-    pointer-events: none; 
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.6); 
-
-    border-top-left-radius: 30px; 
-    border-top-right-radius: 30px; 
-    border-bottom-left-radius: 30px; 
-    border-bottom-right-radius: 30px; 
+    top: 1cm;
+    left: 1cm;
+    right: 1cm;
+    bottom: 1cm;
+    border: 2px solid ${(props) => (props.isCover ? "white" : "#2e6f40")}; /* White border for cover, #2e6f40 for other pages */
+    border-radius: 20px;
+    pointer-events: none;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+    border-top-left-radius: 30px;
+    border-top-right-radius: 30px;
+    border-bottom-left-radius: 30px;
+    border-bottom-right-radius: 30px;
   }
 
-  /* Book spine effect */
-  &::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -15px; 
-    width: 20px; 
-    height: 100%;
-    background: #6e7e4e; 
-    border-radius: 5px; 
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3); 
-  }
-
+  /* Book spine effect, only on cover */
+  ${(props) =>
+    props.isCover &&
+    `&::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -15px;
+      width: 20px;
+      height: 100%;
+      background: #6e7e4e;
+      border-radius: 5px;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
+    }`}
   box-shadow: inset -7px 0 30px -7px rgba(0, 0, 0, 0.4),
     3px 0 10px rgba(0, 0, 0, 0.2);
 `;
@@ -91,10 +92,10 @@ const CoverContent = styled.div`
   }
 
   img {
-    margin-top: 0px; 
+    margin-top: 0px;
     margin-bottom: -40px;
-    max-width: 80%; 
-    height: 350px; 
+    max-width: 80%;
+    height: 350px;
   }
 
   .login-area {
@@ -124,14 +125,17 @@ const PageContent = styled.div`
 const PageTitle = styled.h2`
   margin-bottom: 20px;
   font-family: "Playfair Display", serif;
-  color: #2c3e50;
+  color: ${(props) =>
+    props.isCover
+      ? "#2c3e50"
+      : "#2e6f40"}; /* Use #2e6f40 for non-cover pages */
 `;
 
 const EmptyMessage = styled.p`
   text-align: center;
   color: #95a5a6;
   font-style: italic;
-  margin-top: 40px;
+  margin-top: 6px; /* Reduced margin-top to move the text up */
 `;
 
 const PageNumber = styled.div`
@@ -188,9 +192,25 @@ const NavButton = styled.button`
   }
 `;
 
-const Page = ({ number, children }) => {
+const CameraIcon = styled.img`
+  width: 40px;
+  height: 40px;
+  margin-top: 10px; /* Adjusted to place it above the title */
+  margin-bottom: 10px;
+  cursor: pointer;
+`;
+
+const GuestbookIcon = styled.img`
+  width: 40px;
+  height: 40px;
+  margin-top: 10px; /* Adjusted to place it above the title */
+  margin-bottom: 10px;
+  cursor: pointer;
+`;
+
+const Page = ({ number, isCover, children }) => {
   return (
-    <PageContainer>
+    <PageContainer isCover={isCover}>
       {children}
       {number && <PageNumber>{number}</PageNumber>}
     </PageContainer>
@@ -309,7 +329,7 @@ const Book = () => {
         renderOnlyPageLengthChange={false}
       >
         <div className="page">
-          <Page number="">
+          <Page isCover={true}>
             <CoverContent>
               <h1>Katie & Alex</h1>
               <p>Wedding Guest Book & Photo Album</p>
@@ -326,7 +346,12 @@ const Book = () => {
         <div className="page">
           <Page number="1">
             <PageContent $isAuthenticated={isAuthenticated}>
-              <PageTitle>Share Your Memory</PageTitle>
+              <GuestbookIcon
+                src="/images/guestbook-icon.svg"
+                alt="Guestbook Icon"
+                onClick={() => console.log("Guestbook Icon Clicked")}
+              />
+              <PageTitle isCover={false}>Share Your Memory</PageTitle>
               <PhotoUpload onSubmit={handleSubmission} />
             </PageContent>
           </Page>
@@ -335,7 +360,12 @@ const Book = () => {
         <div className="page">
           <Page number="2">
             <PageContent $isAuthenticated={isAuthenticated}>
-              <PageTitle>Photo Gallery</PageTitle>
+              <CameraIcon
+                src="/images/cameraheart-icon.svg"
+                alt="Camera Icon"
+                onClick={() => console.log("Camera Icon Clicked")}
+              />
+              <PageTitle isCover={false}>Photo Gallery</PageTitle>
               {photoSubmissions.length > 0 ? (
                 <GalleryGrid submissions={photoSubmissions} />
               ) : (
@@ -350,7 +380,7 @@ const Book = () => {
         <div className="page">
           <Page number="3">
             <PageContent $isAuthenticated={isAuthenticated}>
-              <PageTitle>Guest Messages</PageTitle>
+              <PageTitle isCover={false}>Guest Messages</PageTitle>
               {messageSubmissions.length > 0 ? (
                 <GalleryGrid submissions={messageSubmissions} />
               ) : (
@@ -365,7 +395,7 @@ const Book = () => {
         <div className="page">
           <Page number="">
             <PageContent $isAuthenticated={isAuthenticated}>
-              <PageTitle>Thank You</PageTitle>
+              <PageTitle isCover={false}>Thank You</PageTitle>
               <p>For being part of our special day</p>
             </PageContent>
           </Page>
