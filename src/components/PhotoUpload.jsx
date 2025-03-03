@@ -44,21 +44,21 @@ const Form = styled.form`
 const Input = styled.input`
   width: 100%;
   padding: 12px;
-  border: 2px solid #2e6f40; /* Updated border color */
+  border: 2px solid #e0e0e0;
   border-radius: 8px;
   font-size: 16px;
   font-family: "Lato", sans-serif;
 
   &:focus {
     outline: none;
-    border-color: #2e6f40; /* Updated border color on focus */
+    border-color: #2c3e50;
   }
 `;
 
 const TextArea = styled.textarea`
   width: 100%;
   padding: 12px;
-  border: 2px solid #2e6f40; /* Updated border color */
+  border: 2px solid #e0e0e0;
   border-radius: 8px;
   font-size: 16px;
   font-family: "Lato", sans-serif;
@@ -67,14 +67,14 @@ const TextArea = styled.textarea`
 
   &:focus {
     outline: none;
-    border-color: #2e6f40; /* Updated border color on focus */
+    border-color: #2c3e50;
   }
 `;
 
 const Button = styled.button`
   width: 100%;
   padding: 12px;
-  background-color: #2e6f40; /* Updated button color */
+  background-color: #2e6f40; /* Updated color */
   color: white;
   border: none;
   border-radius: 8px;
