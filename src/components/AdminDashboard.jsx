@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import styled from 'styled-components';
-import { authService } from '../services/auth';
-import { galleryService } from '../services/gallery';
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import styled from "styled-components";
+import { authService } from "../services/auth";
+import { galleryService } from "../services/gallery";
 
+// Styled components
 const DashboardContainer = styled.div`
   padding: 20px;
   max-width: 1200px;
@@ -18,36 +19,40 @@ const Header = styled.div`
 `;
 
 const Title = styled.h1`
-  font-family: 'Playfair Display', serif;
-  color: #2c3e50;
-  margin: 0;
+  font-family: "Playfair Display", serif;
+  color: #2e6f40;
+  margin-left: 98px;
+  margin-right: 25px;
+  margin-top: 20px;
 `;
 
 const TabContainer = styled.div`
   display: flex;
   gap: 10px;
+  justify-content: center;
+  align-items: center;
   margin-bottom: 20px;
 `;
 
 const Tab = styled.button`
   padding: 10px 20px;
-  background-color: ${props => props.$active ? '#2c3e50' : 'transparent'};
-  color: ${props => props.$active ? 'white' : '#2c3e50'};
-  border: 2px solid #2c3e50;
+  background-color: ${(props) => (props.$active ? "#2e6f40;" : "transparent")};
+  color: ${(props) => (props.$active ? "white" : "#2e6f40;")};
+  border: 2px solid #6666b3;
   border-radius: 8px;
   cursor: pointer;
-  font-family: 'Lato', sans-serif;
+  font-family: "Lato", sans-serif;
   transition: all 0.3s ease;
 
   &:hover {
-    background-color: ${props => props.$active ? '#34495e' : '#eee'};
+    background-color: ${(props) => (props.$active ? "#9daf89" : "#eee")};
   }
 `;
 
 const Card = styled.div`
   background: white;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px #6666b3;
   padding: 20px;
   margin-bottom: 20px;
 `;
@@ -56,34 +61,38 @@ const Form = styled.form`
   display: flex;
   flex-direction: column;
   gap: 15px;
-  max-width: 400px;
+  max-width: 500px;
+  padding-left: 40px;
+  padding-right: 0px;
+  padding-top: 12px;
+  padding-bottom: 18px;
 `;
 
 const Input = styled.input`
   padding: 10px;
-  border: 2px solid #e0e0e0;
+  border: 2px solid #2e6f40;
   border-radius: 8px;
   font-size: 16px;
-  font-family: 'Lato', sans-serif;
+  font-family: "Lato", sans-serif;
 
   &:focus {
     outline: none;
-    border-color: #2c3e50;
+    border-color: #2e6f40;
   }
 `;
 
 const Button = styled.button`
   padding: 10px 20px;
-  background-color: #2c3e50;
+  background-color: #6666b3;
   color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  font-family: 'Lato', sans-serif;
+  font-family: "Lato", sans-serif;
   transition: background-color 0.3s ease;
 
   &:hover {
-    background-color: #34495e;
+    background-color: #9daf89;
   }
 
   &:disabled {
@@ -99,7 +108,7 @@ const ErrorMessage = styled.div`
 `;
 
 const SuccessMessage = styled.div`
-  color: #27ae60;
+  color: #b3b3d9;
   margin-top: 10px;
   font-size: 14px;
 `;
@@ -115,12 +124,12 @@ const StatCard = styled.div`
   background: white;
   padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px #6666b3;
   text-align: center;
 
   h3 {
     margin: 0;
-    color: #7f8c8d;
+    color: #2e6f40;
     font-size: 0.9em;
     text-transform: uppercase;
   }
@@ -128,7 +137,7 @@ const StatCard = styled.div`
   p {
     margin: 10px 0 0;
     font-size: 2em;
-    color: #2c3e50;
+    color: #2e6f40;
     font-weight: bold;
   }
 `;
@@ -138,15 +147,15 @@ const BackLink = styled(Link)`
   top: 20px;
   left: 20px;
   padding: 8px 16px;
-  background-color: #2c3e50;
+  background-color: #2e6f40;
   color: white;
   text-decoration: none;
   border-radius: 8px;
-  font-family: 'Lato', sans-serif;
+  font-family: "Lato", sans-serif;
   transition: background-color 0.3s ease;
 
   &:hover {
-    background-color: #34495e;
+    background-color: #9daf89;
   }
 `;
 
@@ -166,39 +175,54 @@ const LoadingOverlay = styled.div`
 const LoadingSpinner = styled.div`
   width: 50px;
   height: 50px;
-  border: 5px solid #f3f3f3;
-  border-top: 5px solid #2c3e50;
+  border: 5px solid #9daf89;
+  border-top: 5px solid #2e6f40;
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  
+
   @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 `;
 
+const HeaderTitle = styled.h2`
+  color: #2e6f40;
+  text-align: center;
+`;
+
+const FlipSymbol = styled.span`
+  display: inline-block;
+  transform: ${(props) => (props.flip ? "scaleX(-1)" : "none")};
+  margin: 0 8px;
+`;
+
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState("overview");
   const [stats, setStats] = useState({
     totalImages: 0,
     totalMessages: 0,
-    activeGroups: 0
+    activeGroups: 0,
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
   // Password change form
   const [passwordForm, setPasswordForm] = useState({
-    oldPassword: '',
-    newPassword: '',
-    confirmPassword: ''
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
 
   // Guest credentials form
   const [guestForm, setGuestForm] = useState({
-    username: '',
-    password: ''
+    username: "",
+    password: "",
   });
 
   useEffect(() => {
@@ -209,24 +233,24 @@ const AdminDashboard = () => {
     try {
       const images = await galleryService.getAllImages();
       const groups = await galleryService.getAllGroups();
-      
+
       setStats({
         totalImages: images.length,
-        totalMessages: images.filter(img => img.message).length,
-        activeGroups: groups.filter(group => group.is_active).length
+        totalMessages: images.filter((img) => img.message).length,
+        activeGroups: groups.filter((group) => group.is_active).length,
       });
     } catch (error) {
-      console.error('Error fetching stats:', error);
+      console.error("Error fetching stats:", error);
     }
   };
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      setError('New passwords do not match');
+      setError("New passwords do not match");
       return;
     }
 
@@ -236,10 +260,14 @@ const AdminDashboard = () => {
         passwordForm.oldPassword,
         passwordForm.newPassword
       );
-      setSuccess('Password updated successfully');
-      setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
+      setSuccess("Password updated successfully");
+      setPasswordForm({
+        oldPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
     } catch (err) {
-      setError(err.error || 'Failed to update password');
+      setError(err.error || "Failed to update password");
     } finally {
       setLoading(false);
     }
@@ -247,8 +275,8 @@ const AdminDashboard = () => {
 
   const handleGuestCredentialsUpdate = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     try {
       setLoading(true);
@@ -256,11 +284,11 @@ const AdminDashboard = () => {
         guestForm.username,
         guestForm.password
       );
-      setSuccess('Guest credentials updated successfully');
-      setGuestForm({ username: '', password: '' });
+      setSuccess("Guest credentials updated successfully");
+      setGuestForm({ username: "", password: "" });
       fetchStats(); // Refresh stats
     } catch (err) {
-      setError(err.error || 'Failed to update guest credentials');
+      setError(err.error || "Failed to update guest credentials");
     } finally {
       setLoading(false);
     }
@@ -270,21 +298,26 @@ const AdminDashboard = () => {
     try {
       setLoading(true);
       const data = await galleryService.exportData();
-      
+
       // Create and download file
-      const blob = new Blob([data], { type: 'application/json' });
+      const blob = new Blob([data], { type: "application/json" });
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.setAttribute('download', `wedding-guestbook-export-${new Date().toISOString().split('T')[0]}.json`);
+      link.setAttribute(
+        "download",
+        `wedding-guestbook-export-${
+          new Date().toISOString().split("T")[0]
+        }.json`
+      );
       document.body.appendChild(link);
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-      
-      setSuccess('Data exported successfully');
+
+      setSuccess("Data exported successfully");
     } catch (err) {
-      setError('Failed to export data');
+      setError("Failed to export data");
     } finally {
       setLoading(false);
     }
@@ -293,9 +326,9 @@ const AdminDashboard = () => {
   return (
     <DashboardContainer>
       <BackLink to="/">← Back to Guestbook</BackLink>
-      
+
       <Header>
-        <Title>Admin Dashboard</Title>
+        <Title> Admin Dashboard </Title>
         <Button onClick={handleExportData} disabled={loading}>
           Export Data
         </Button>
@@ -308,21 +341,21 @@ const AdminDashboard = () => {
       )}
 
       <TabContainer>
-        <Tab 
-          $active={activeTab === 'overview'} 
-          onClick={() => setActiveTab('overview')}
+        <Tab
+          $active={activeTab === "overview"}
+          onClick={() => setActiveTab("overview")}
         >
           Overview
         </Tab>
-        <Tab 
-          $active={activeTab === 'settings'} 
-          onClick={() => setActiveTab('settings')}
+        <Tab
+          $active={activeTab === "settings"}
+          onClick={() => setActiveTab("settings")}
         >
           Settings
         </Tab>
       </TabContainer>
 
-      {activeTab === 'overview' && (
+      {activeTab === "overview" && (
         <>
           <StatsGrid>
             <StatCard>
@@ -341,39 +374,48 @@ const AdminDashboard = () => {
         </>
       )}
 
-      {activeTab === 'settings' && (
+      {activeTab === "settings" && (
         <>
           <Card>
-            <h2>Update Admin Password</h2>
+            <HeaderTitle>
+              <FlipSymbol>₊˚⊹♡</FlipSymbol> Update Admin Password{" "}
+              <FlipSymbol flip={true}>₊˚⊹♡</FlipSymbol>
+            </HeaderTitle>
             <Form onSubmit={handlePasswordChange}>
               <Input
                 type="password"
                 placeholder="Current Password"
                 value={passwordForm.oldPassword}
-                onChange={(e) => setPasswordForm(prev => ({
-                  ...prev,
-                  oldPassword: e.target.value
-                }))}
+                onChange={(e) =>
+                  setPasswordForm((prev) => ({
+                    ...prev,
+                    oldPassword: e.target.value,
+                  }))
+                }
                 required
               />
               <Input
                 type="password"
                 placeholder="New Password"
                 value={passwordForm.newPassword}
-                onChange={(e) => setPasswordForm(prev => ({
-                  ...prev,
-                  newPassword: e.target.value
-                }))}
+                onChange={(e) =>
+                  setPasswordForm((prev) => ({
+                    ...prev,
+                    newPassword: e.target.value,
+                  }))
+                }
                 required
               />
               <Input
                 type="password"
                 placeholder="Confirm New Password"
                 value={passwordForm.confirmPassword}
-                onChange={(e) => setPasswordForm(prev => ({
-                  ...prev,
-                  confirmPassword: e.target.value
-                }))}
+                onChange={(e) =>
+                  setPasswordForm((prev) => ({
+                    ...prev,
+                    confirmPassword: e.target.value,
+                  }))
+                }
                 required
               />
               <Button type="submit" disabled={loading}>
@@ -383,26 +425,33 @@ const AdminDashboard = () => {
           </Card>
 
           <Card>
-            <h2>Update Guest Access</h2>
+            <HeaderTitle>
+              <FlipSymbol>₊˚⊹♡</FlipSymbol> Update Guest Access{" "}
+              <FlipSymbol flip={true}>₊˚⊹♡</FlipSymbol>
+            </HeaderTitle>
             <Form onSubmit={handleGuestCredentialsUpdate}>
               <Input
                 type="text"
                 placeholder="Guest Username"
                 value={guestForm.username}
-                onChange={(e) => setGuestForm(prev => ({
-                  ...prev,
-                  username: e.target.value
-                }))}
+                onChange={(e) =>
+                  setGuestForm((prev) => ({
+                    ...prev,
+                    username: e.target.value,
+                  }))
+                }
                 required
               />
               <Input
                 type="password"
                 placeholder="Guest Password"
                 value={guestForm.password}
-                onChange={(e) => setGuestForm(prev => ({
-                  ...prev,
-                  password: e.target.value
-                }))}
+                onChange={(e) =>
+                  setGuestForm((prev) => ({
+                    ...prev,
+                    password: e.target.value,
+                  }))
+                }
                 required
               />
               <Button type="submit" disabled={loading}>
@@ -419,4 +468,4 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard; 
+export default AdminDashboard;
