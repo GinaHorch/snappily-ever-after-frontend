@@ -227,7 +227,7 @@ const MessageIcon = styled.img`
 const Page = ({ number, isCover, children }) => {
   return (
     <PageContainer isCover={isCover}>
-      {children}
+       {children}
       {number && <PageNumber>{number}</PageNumber>}
     </PageContainer>
   );
@@ -236,10 +236,17 @@ const Page = ({ number, isCover, children }) => {
 const Book = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [submissions, setSubmissions] = useState([]);
+  const [refreshTrigger, setRefreshTrigger] = useState(false);
   const [showHint, setShowHint] = useState(true);
   const [page, setPage] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
   const bookRef = useRef(null);
+
+  // ✅ Define image upload success handler here
+  const handleImageUploadSuccess = (newImage) => {
+    console.log("New image received:", newImage); // ✅ Debugging step
+    setRefreshTrigger((prev) => !prev); // ✅ Trigger gallery refresh
+  };
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -281,11 +288,6 @@ const Book = () => {
     setIsAuthenticated(true);
   };
 
-  const handleSubmission = (submission) => {
-    setSubmissions((prev) => [...prev, submission]);
-    console.log("New submission:", submission);
-  };
-
   const nextPage = () => {
     if (bookRef.current) {
       console.log("Attempting to flip to next page");
@@ -306,10 +308,11 @@ const Book = () => {
   };
 
   const photoSubmissions = submissions.filter((sub) => sub.image);
-  const messageSubmissions = submissions.filter((sub) => sub.message);
+  const messageSubmissions = submissions.filter((sub) => sub.comment);
 
   return (
     <BookContainer>
+      
       {showConfetti && (
         <Confetti
           width={window.innerWidth}
@@ -345,7 +348,7 @@ const Book = () => {
         renderOnlyPageLengthChange={false}
       >
         <div className="page">
-          <Page isCover={true}>
+          <Page isCover={true} >
             <CoverContent>
               <h1>Katie & Alex</h1>
               <p>Wedding Guest Book & Photo Album</p>
@@ -360,7 +363,7 @@ const Book = () => {
         </div>
 
         <div className="page">
-          <Page number="1">
+          <Page number="1" >
             <PageContent $isAuthenticated={isAuthenticated}>
               <GuestbookIcon
                 src="/images/guestbook-icon.svg"
@@ -368,13 +371,13 @@ const Book = () => {
                 onClick={() => console.log("Guestbook Icon Clicked")}
               />
               <PageTitle isCover={false}>Share Your Memory</PageTitle>
-              <PhotoUpload onSubmit={handleSubmission} />
+              <PhotoUpload setRefreshTrigger={setRefreshTrigger} onSuccess={handleImageUploadSuccess} />
             </PageContent>
           </Page>
         </div>
 
         <div className="page">
-          <Page number="2">
+          <Page number="2" >
             <PageContent $isAuthenticated={isAuthenticated}>
               <CameraIcon
                 src="/images/cameraheart-icon.svg"
@@ -382,19 +385,13 @@ const Book = () => {
                 onClick={() => console.log("Camera Icon Clicked")}
               />
               <PageTitle isCover={false}>Photo Gallery</PageTitle>
-              {photoSubmissions.length > 0 ? (
-                <GalleryGrid submissions={photoSubmissions} />
-              ) : (
-                <EmptyMessage>
-                  No photos have been shared yet. Be the first!
-                </EmptyMessage>
-              )}
+              <GalleryGrid refreshTrigger={refreshTrigger} />
             </PageContent>
           </Page>
         </div>
 
         <div className="page">
-          <Page number="3">
+          <Page number="3" >
             <PageContent $isAuthenticated={isAuthenticated}>
               {/* Move the Guestbook Icon above the title */}
               <MessageIcon
@@ -404,7 +401,7 @@ const Book = () => {
               />
               <PageTitle isCover={false}>Guest Messages</PageTitle>
               {messageSubmissions.length > 0 ? (
-                <GalleryGrid submissions={messageSubmissions} />
+                 <GalleryGrid refreshTrigger={refreshTrigger} />
               ) : (
                 <EmptyMessage>
                   No messages have been shared yet. Be the first!
