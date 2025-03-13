@@ -7,7 +7,9 @@ import {
 } from "react-router-dom";
 import Book from "./components/Book";
 import AdminDashboard from "./components/AdminDashboard";
+import LoginForm from "./components/LoginForm";
 import styled from "styled-components";
+import { useState, useEffect } from "react";
 import { authService } from "./services/auth";
 import Confetti from "react-confetti"; 
 
@@ -46,7 +48,7 @@ const AdminLinkContainer = styled.div`
 const FloralPatternSection = styled.div`
   width: 100%;
   height: 200px;
-  background: url("public/images/floral-pattern.jpg") no-repeat center center;
+  background: url("/images/floral-pattern.jpg") no-repeat center center;
   background-size: cover;
 `;
 
@@ -61,7 +63,19 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function App() {
-  const isAdmin = authService.isAdmin();
+  const [isAuthenticated, setIsAuthenticated] = useState(authService.isAuthenticated());
+  const [isAdmin, setIsAdmin] = useState(authService.isAdmin());
+
+  useEffect(() => {
+    // Update admin state when authentication changes
+    setIsAuthenticated(authService.isAuthenticated());
+    setIsAdmin(authService.isAdmin());
+  }, []);
+
+  const handleLogin = () => {
+    setIsAuthenticated(true);
+    setIsAdmin(authService.isAdmin());
+  };
 
   const windowWidth = window.innerWidth;
   const windowHeight = window.innerHeight;
@@ -95,7 +109,9 @@ function App() {
         )}
 
         <Routes>
-          <Route path="/" element={<Book />} />
+          {/* If authenticated, show guestbook, else show login */}
+          <Route path="/" element={isAuthenticated ? <Book /> : <LoginForm onLogin={handleLogin} />} />
+          {/* Protected Admin Route */}
           <Route
             path="/admin"
             element={
