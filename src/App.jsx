@@ -102,22 +102,26 @@ function App() {
   return (
     <Router>
       <AppContainer>
-        <Confetti
-          width={windowWidth}
-          height={windowHeight}
-          numberOfPieces={250}
-          recycle={true}
-          gravity={0.1}
-          initialVelocityY={3}
-          initialVelocityX={5}
-          colors={["#FFD700", "#FFA500", "#FF69B4", "#87CEEB", "#98FB98"]}
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            zIndex: 0,
-          }}
-        />
+        {/* Only show confetti on the main page */}
+        {window.location.pathname === '/' && (
+          <Confetti
+            width={windowWidth}
+            height={windowHeight}
+            numberOfPieces={100}
+            recycle={true}
+            gravity={0.2}
+            initialVelocityY={2}
+            initialVelocityX={2}
+            colors={["#FFD700", "#FFA500", "#FF69B4", "#87CEEB", "#98FB98"]}
+            opacity={0.7}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              zIndex: 0,
+            }}
+          />
+        )}
 
         {/* Show admin link only when logged in as admin */}
         {isAuthenticated && isAdmin && (
