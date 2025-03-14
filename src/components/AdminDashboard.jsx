@@ -231,8 +231,7 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [stats, setStats] = useState({
     totalImages: 0,
-    totalMessages: 0,
-    activeGroups: 0,
+    totalMessages: 0
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -258,15 +257,14 @@ const AdminDashboard = () => {
   const fetchStats = async () => {
     try {
       const images = await galleryService.getAllImages();
-      const groups = await galleryService.getAllGroups();
-
+      
       setStats({
         totalImages: images.length,
-        totalMessages: images.filter((img) => img.message).length,
-        activeGroups: groups.filter((group) => group.is_active).length,
+        totalMessages: images.filter((img) => img.comment).length
       });
     } catch (error) {
       console.error("Error fetching stats:", error);
+      setError("Failed to load statistics. Please try again later.");
     }
   };
 
@@ -402,10 +400,6 @@ const AdminDashboard = () => {
             <StatCard>
               <h3>Total Messages</h3>
               <p>{stats.totalMessages}</p>
-            </StatCard>
-            <StatCard>
-              <h3>Active Groups</h3>
-              <p>{stats.activeGroups}</p>
             </StatCard>
           </StatsGrid>
         </>

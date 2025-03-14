@@ -2,10 +2,9 @@ import api from './api';
 
 export const galleryService = {
   // Get all images (filtered by user's group for guests)
-  getAllImages: async (groupId = null) => {
+  getAllImages: async () => {
     try {
-      const params = groupId ? { group: groupId } : {};
-      const response = await api.get('/images/', { params });
+      const response = await api.get('/images/');
       return response.data;
     } catch (error) {
       throw error.response?.data || { error: 'Failed to fetch images' };
@@ -61,9 +60,10 @@ export const galleryService = {
   // Admin only: Delete image
   deleteImage: async (imageId) => {
     try {
-      const response = await api.delete(`/images/${imageId}/delete/`);
+      const response = await api.delete(`/images/${imageId}/`);
       return response.data;
     } catch (error) {
+      console.error('Delete error:', error);
       throw error.response?.data || { error: 'Failed to delete image' };
     }
   },
@@ -126,12 +126,33 @@ export const galleryService = {
   // Admin only: Export all data
   exportData: async () => {
     try {
-      const response = await api.get('/images/export/', {
-        responseType: 'blob',
+      const response = await api.get('/images/export-data/', {
+        responseType: 'blob'
       });
       return response.data;
     } catch (error) {
+      console.error('Export error:', error);
       throw error.response?.data || { error: 'Failed to export data' };
+    }
+  },
+
+  // Download image (admin only)
+  downloadImage: async (imageUrl) => {
+    try {
+      // Extract image ID from URL
+      const imageId = imageUrl.split('/').pop().split('.')[0];
+      const response = await api.get(`/images/${imageId}/download/`, {
+        responseType: 'blob'
+      });
+      
+      if (!response.data) {
+        throw new Error('Failed to download image');
+      }
+      
+      return response.data;
+    } catch (error) {
+      console.error('Download error:', error);
+      throw { error: 'Failed to download image' };
     }
   },
 }; 

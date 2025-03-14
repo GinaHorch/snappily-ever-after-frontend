@@ -14,7 +14,8 @@ import { authService } from "./services/auth";
 import Confetti from "react-confetti";
 
 const AppContainer = styled.div`
-  min-height: 10px;
+  min-height: 100vh;
+  width: 100%;
   background: #e6e6fa;
   display: flex;
   align-items: center;
@@ -22,6 +23,7 @@ const AppContainer = styled.div`
   flex-direction: column;
   position: relative;
   z-index: 1;
+  padding: 20px;
 `;
 
 const AdminLink = styled(Link)`
@@ -53,7 +55,12 @@ const FloralPatternSection = styled.div`
 `;
 
 const ProtectedRoute = ({ children }) => {
+  const isAuthenticated = authService.isAuthenticated();
   const isAdmin = authService.isAdmin();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/" state={{ requiresAuth: true }} replace />;
+  }
 
   if (!isAdmin) {
     return <Navigate to="/" replace />;
@@ -63,18 +70,30 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(authService.isAuthenticated());
-  const [isAdmin, setIsAdmin] = useState(authService.isAdmin());
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  const checkAuth = () => {
+    const authenticated = authService.isAuthenticated();
+    const admin = authService.isAdmin();
+    setIsAuthenticated(authenticated);
+    setIsAdmin(admin);
+  };
 
   useEffect(() => {
-    // Update admin state when authentication changes
-    setIsAuthenticated(authService.isAuthenticated());
-    setIsAdmin(authService.isAdmin());
+    checkAuth();
+    // Listen for storage changes (in case of logout in another tab)
+    window.addEventListener('storage', checkAuth);
+    return () => window.removeEventListener('storage', checkAuth);
   }, []);
 
   const handleLogin = () => {
-    setIsAuthenticated(true);
-    setIsAdmin(authService.isAdmin());
+    checkAuth(); // Update auth state immediately after login
+  };
+
+  const handleLogout = () => {
+    authService.logout();
+    checkAuth(); // Update auth state immediately after logout
   };
 
   const windowWidth = window.innerWidth;
@@ -83,7 +102,6 @@ function App() {
   return (
     <Router>
       <AppContainer>
-        {/* Confetti placed here with low z-index */}
         <Confetti
           width={windowWidth}
           height={windowHeight}
@@ -97,26 +115,27 @@ function App() {
             position: "absolute",
             top: 0,
             left: 0,
-            zIndex: 0, // Lower z-index to put it behind content
+            zIndex: 0,
           }}
         />
 
-        {/* Content is rendered above the confetti */}
-        {isAdmin && (
+        {/* Show admin link only when logged in as admin */}
+        {isAuthenticated && isAdmin && (
           <AdminLinkContainer>
             <AdminLink to="/admin">Admin Dashboard</AdminLink>
           </AdminLinkContainer>
         )}
 
         <Routes>
-          {/* If authenticated, show guestbook, else show login */}
-          <Route path="/" element={isAuthenticated ? <Book /> : <LoginForm onLogin={handleLogin} />} />
+          {/* Main route - always show Book component which handles its own auth state */}
+          <Route path="/" element={<Book onLogin={handleLogin} />} />
+          
           {/* Protected Admin Route */}
           <Route
             path="/admin"
             element={
               <ProtectedRoute>
-                <AdminDashboard />
+                <AdminDashboard onLogout={handleLogout} />
               </ProtectedRoute>
             }
           />

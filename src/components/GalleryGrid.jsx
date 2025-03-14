@@ -192,8 +192,7 @@ const GalleryGrid = ({ refreshTrigger }) => {
 
   const handleDownload = async (imageUrl, name) => {
     try {
-      const response = await fetch(imageUrl);
-      const blob = await response.blob();
+      const blob = await galleryService.downloadImage(imageUrl);
       const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = downloadUrl;
@@ -236,13 +235,15 @@ const GalleryGrid = ({ refreshTrigger }) => {
                 src={submission.image} 
                 alt={`Photo by ${submission.name}`} 
               />
-              <ImageOverlay className="overlay">
-                <DownloadButton
-                  onClick={() => handleDownload(submission.image, submission.name)}
-                >
-                  Download Photo
-                </DownloadButton>
-              </ImageOverlay>
+              {isAdmin && (
+                <ImageOverlay className="overlay">
+                  <DownloadButton
+                    onClick={() => handleDownload(submission.image, submission.name)}
+                  >
+                    Download Photo
+                  </DownloadButton>
+                </ImageOverlay>
+              )}
             </ImageContainer>
           )}
           <MessageContent>
