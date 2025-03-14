@@ -60,7 +60,11 @@ export const galleryService = {
   // Admin only: Delete image
   deleteImage: async (imageId) => {
     try {
-      const response = await api.delete(`/images/${imageId}/`);
+      const response = await api.delete(`/images/delete/${imageId}/`, {
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
       return response.data;
     } catch (error) {
       console.error('Delete error:', error);

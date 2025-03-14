@@ -4,6 +4,7 @@ import {
   Route,
   Navigate,
   Link,
+  useLocation
 } from "react-router-dom";
 import Book from "./components/Book";
 import AdminDashboard from "./components/AdminDashboard";
@@ -69,9 +70,11 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-function App() {
+// Separate component for the app content that uses useLocation
+function AppContent() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const location = useLocation();
 
   const checkAuth = () => {
     const authenticated = authService.isAuthenticated();
@@ -82,69 +85,69 @@ function App() {
 
   useEffect(() => {
     checkAuth();
-    // Listen for storage changes (in case of logout in another tab)
     window.addEventListener('storage', checkAuth);
     return () => window.removeEventListener('storage', checkAuth);
   }, []);
 
   const handleLogin = () => {
-    checkAuth(); // Update auth state immediately after login
+    checkAuth();
   };
 
   const handleLogout = () => {
     authService.logout();
-    checkAuth(); // Update auth state immediately after logout
+    checkAuth();
   };
 
   const windowWidth = window.innerWidth;
   const windowHeight = window.innerHeight;
 
   return (
+    <AppContainer>
+      {location.pathname === '/' && (
+        <Confetti
+          width={windowWidth}
+          height={windowHeight}
+          numberOfPieces={100}
+          recycle={true}
+          gravity={0.2}
+          initialVelocityY={2}
+          initialVelocityX={2}
+          colors={["#FFD700", "#FFA500", "#FF69B4", "#87CEEB", "#98FB98"]}
+          opacity={0.7}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            zIndex: 0,
+          }}
+        />
+      )}
+
+      {isAuthenticated && isAdmin && (
+        <AdminLinkContainer>
+          <AdminLink to="/admin">Admin Dashboard</AdminLink>
+        </AdminLinkContainer>
+      )}
+
+      <Routes>
+        <Route path="/" element={<Book onLogin={handleLogin} />} />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    </AppContainer>
+  );
+}
+
+function App() {
+  return (
     <Router>
-      <AppContainer>
-        {/* Only show confetti on the main page */}
-        {window.location.pathname === '/' && (
-          <Confetti
-            width={windowWidth}
-            height={windowHeight}
-            numberOfPieces={100}
-            recycle={true}
-            gravity={0.2}
-            initialVelocityY={2}
-            initialVelocityX={2}
-            colors={["#FFD700", "#FFA500", "#FF69B4", "#87CEEB", "#98FB98"]}
-            opacity={0.7}
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              zIndex: 0,
-            }}
-          />
-        )}
-
-        {/* Show admin link only when logged in as admin */}
-        {isAuthenticated && isAdmin && (
-          <AdminLinkContainer>
-            <AdminLink to="/admin">Admin Dashboard</AdminLink>
-          </AdminLinkContainer>
-        )}
-
-        <Routes>
-          {/* Main route - always show Book component which handles its own auth state */}
-          <Route path="/" element={<Book onLogin={handleLogin} />} />
-          
-          {/* Protected Admin Route */}
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute>
-                <AdminDashboard onLogout={handleLogout} />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </AppContainer>
+      <AppContent />
     </Router>
   );
 }
