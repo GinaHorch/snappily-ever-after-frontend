@@ -11,17 +11,17 @@ import LoginForm from "./components/LoginForm";
 import styled from "styled-components";
 import { useState, useEffect } from "react";
 import { authService } from "./services/auth";
-import Confetti from "react-confetti"; 
+import Confetti from "react-confetti";
 
 const AppContainer = styled.div`
-  min-height: 100vh;
+  min-height: 10px;
   background: #e6e6fa;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  position: relative; 
-  z-index: 1; 
+  position: relative;
+  z-index: 1;
 `;
 
 const AdminLink = styled(Link)`
@@ -34,7 +34,7 @@ const AdminLink = styled(Link)`
   transition: background-color 0.3s ease;
 
   &:hover {
-    background-color: #34495e;
+    background-color: #9daf89;
   }
 `;
 
@@ -121,9 +121,6 @@ function App() {
             }
           />
         </Routes>
-
-        {/* Add the floral pattern section at the bottom */}
-        <FloralPatternSection />
       </AppContainer>
     </Router>
   );

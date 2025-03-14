@@ -420,7 +420,7 @@ const Book = () => {
                 alt="Thankful Icon"
               />
               <PageTitle $isCover={false}>Thank You</PageTitle>
-              <p>For being part of our special day</p>
+              <p>For being part of our special day.</p>
             </PageContent>
           </Page>
         </div>
