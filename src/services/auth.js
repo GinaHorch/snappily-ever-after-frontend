@@ -9,7 +9,9 @@ export const authService = {
         ? { username, password }  // Admin logs in with username + password
         : { username: "PreWedding", password };  // Guests only enter passcode
 
+      console.log('Attempting login with:', { ...loginData, password: '***' });
       const response = await api.post('/login/', loginData);
+      console.log('Login response:', { ...response.data, token: response.data.token ? 'exists' : 'missing' });
       
       // Store token and user info
       localStorage.setItem('token', response.data.token);
@@ -18,9 +20,15 @@ export const authService = {
         username: response.data.username,
         isGuest: response.data.is_guest,
       }));
+
+      console.log('Stored auth data:', { 
+        token: localStorage.getItem('token') ? 'exists' : 'missing',
+        user: localStorage.getItem('user')
+      });
       
       return response.data;
     } catch (error) {
+      console.error('Login error:', error.response?.data || error);
       throw error.response?.data || { error: 'Login failed' };
     }
   },

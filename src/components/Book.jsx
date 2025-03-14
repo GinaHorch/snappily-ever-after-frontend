@@ -5,6 +5,7 @@ import Confetti from "react-confetti";
 import LoginForm from "./LoginForm";
 import PhotoUpload from "./PhotoUpload";
 import GalleryGrid from "./GalleryGrid";
+import { authService } from "../services/auth";
 
 const PageContainer = styled.div.attrs(props => ({
   'data-is-cover': props.$isCover
@@ -235,14 +236,21 @@ const Page = ({ number, isCover, children }) => {
   );
 };
 
-const Book = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+const Book = ({ onLogin }) => {
   const [submissions, setSubmissions] = useState([]);
   const [refreshTrigger, setRefreshTrigger] = useState(false);
   const [showHint, setShowHint] = useState(true);
   const [page, setPage] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
   const bookRef = useRef(null);
+  const isAuthenticated = authService.isAuthenticated();
+
+  // Add effect to fetch submissions when auth state changes
+  useEffect(() => {
+    if (isAuthenticated) {
+      setRefreshTrigger(prev => !prev); // This will trigger a refresh in GalleryGrid
+    }
+  }, [isAuthenticated]);
 
   // ✅ Define image upload success handler here
   const handleImageUploadSuccess = (newImage) => {
@@ -287,7 +295,7 @@ const Book = () => {
   }, [isAuthenticated]);
 
   const handleLogin = () => {
-    setIsAuthenticated(true);
+    onLogin(); // Call the parent's onLogin handler
   };
 
   const nextPage = () => {

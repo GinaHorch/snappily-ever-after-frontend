@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { authService } from '../services/auth';
 
@@ -70,6 +71,39 @@ const ErrorMessage = styled.p`
   margin-top: 10px;
 `;
 
+const GalleryView = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 20px;
+`;
+
+const ImageCard = styled.div`
+  position: relative;
+  cursor: pointer;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  
+  &:hover .overlay {
+    opacity: 1;
+  }
+`;
+
+const DetailModal = styled.div`
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+`;
+
 const LoginForm = ({ onLogin }) => {
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [formData, setFormData] = useState({
@@ -77,6 +111,15 @@ const LoginForm = ({ onLogin }) => {
     password: ''
   });
   const [error, setError] = useState('');
+  const location = useLocation();
+
+  // Check if we were redirected here due to requiring authentication
+  useEffect(() => {
+    if (location.state?.requiresAuth) {
+      setIsAdminMode(true);
+      setError('Please log in as admin to access the dashboard');
+    }
+  }, [location]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
