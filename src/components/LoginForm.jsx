@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import styled from 'styled-components';
+import { authService } from '../services/auth';
 
 const FormContainer = styled.form`
   display: flex;
@@ -14,10 +15,10 @@ const FormContainer = styled.form`
 const Input = styled.input`
   width: 100%;
   padding: 12px;
-  border: 2px solid #e0e0e0;
+  border: 2px solid #2e6f40;
   border-radius: 8px;
   font-size: 16px;
-  font-family: 'Lato', sans-serif;
+  font-family: "Lato", sans-serif;
   transition: border-color 0.3s ease;
 
   &:focus {
@@ -29,12 +30,12 @@ const Input = styled.input`
 const Button = styled.button`
   width: 100%;
   padding: 12px;
-  background-color: #2c3e50;
+  background-color: #2E6F40;
   color: white;
   border: none;
   border-radius: 8px;
   font-size: 16px;
-  font-family: 'Lato', sans-serif;
+  font-family: "Lato", sans-serif;
   cursor: pointer;
   transition: background-color 0.3s ease;
 
@@ -55,17 +56,19 @@ const ErrorMessage = styled.p`
 `;
 
 const LoginForm = ({ onLogin }) => {
-  const [password, setPassword] = useState('');
+  const [passcode, setPasscode] = useState('');
   const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     // Temporary mock authentication
-    if (password === 'wedding2025') {
+    try {
+      // Use "PreWedding" as the username for guests
+      await authService.login("PreWedding", passcode);
       onLogin();
       setError('');
-    } else {
-      setError('Incorrect password. Please try again.');
+    } catch (error) {
+      setError('Incorrect passcode. Please try again.');
     }
   };
 
@@ -74,8 +77,8 @@ const LoginForm = ({ onLogin }) => {
       <Input
         type="password"
         placeholder="Enter event password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
+        value={passcode}
+        onChange={(e) => setPasscode(e.target.value)}
         required
       />
       <Button type="submit">Enter Guestbook</Button>

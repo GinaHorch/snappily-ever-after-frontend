@@ -4,10 +4,12 @@ export const authService = {
   // Login for both admin and guests
   login: async (username, password) => {
     try {
-      const response = await api.post('/users/login/', {
-        username,
-        password,
-      });
+      // If no username is provided, assume guest login PreWedding
+      const loginData = username 
+        ? { username, password }  // Admin logs in with username + password
+        : { username: "PreWedding", password };  // Guests only enter passcode
+
+      const response = await api.post('/login/', loginData);
       
       // Store token and user info
       localStorage.setItem('token', response.data.token);

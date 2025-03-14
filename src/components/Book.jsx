@@ -1,24 +1,61 @@
-import { useState, useEffect, useRef } from 'react';
-import HTMLFlipBook from 'react-pageflip';
-import styled from 'styled-components';
-import Confetti from 'react-confetti';
-import LoginForm from './LoginForm';
-import PhotoUpload from './PhotoUpload';
-import GalleryGrid from './GalleryGrid';
+import { useState, useEffect, useRef } from "react";
+import HTMLFlipBook from "react-pageflip";
+import styled from "styled-components";
+import Confetti from "react-confetti";
+import LoginForm from "./LoginForm";
+import PhotoUpload from "./PhotoUpload";
+import GalleryGrid from "./GalleryGrid";
 
-const PageContainer = styled.div`
-  background-color: #fff;
+const PageContainer = styled.div.attrs(props => ({
+  'data-is-cover': props.$isCover
+}))`
+  background-color: ${(props) => (props.$isCover ? "#9daf89" : "#FAF9F6")};
   border: 1px solid #c2c2c2;
-  border-radius: 0 10px 10px 0;
-  box-shadow: inset -7px 0 30px -7px rgba(0,0,0,0.4);
+  border-radius: ${(props) =>
+    props.$isCover ? "0 10px 10px 0" : "0"}; /* Only rounded corners on cover */
+  box-shadow: inset -7px 0 30px -7px rgba(0, 0, 0, 0.4);
   height: 100%;
   width: 100%;
-  padding: 20px;
+  padding: 1cm;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 1cm;
+    left: 1cm;
+    right: 1cm;
+    bottom: 1cm;
+    border: 2px solid ${(props) => (props.$isCover ? "white" : "#2e6f40")}; /* White border for cover, #2e6f40 for other pages */
+    border-radius: 20px;
+    pointer-events: none;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+    border-top-left-radius: 30px;
+    border-top-right-radius: 30px;
+    border-bottom-left-radius: 30px;
+    border-bottom-right-radius: 30px;
+  }
+
+  /* Book spine effect, only on cover */
+  ${(props) =>
+    props.$isCover &&
+    `&::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -15px;
+      width: 20px;
+      height: 100%;
+      background: #6e7e4e;
+      border-radius: 5px;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
+    }`}
+  box-shadow: inset -7px 0 30px -7px rgba(0, 0, 0, 0.4),
+    3px 0 10px rgba(0, 0, 0, 0.2);
 `;
 
 const BookContainer = styled.div`
@@ -38,24 +75,44 @@ const CoverContent = styled.div`
   align-items: center;
   justify-content: center;
   position: relative;
-  
-  h1, p {
+
+  h1 {
     pointer-events: none;
+    color: white;
+    font: "Parisienne";
+    font-weight: bold;
+    font-size: 60px;
+    margin-bottom: 0px;
   }
-  
+
+  p {
+    pointer-events: none;
+    color: #2e6f40;
+    font-weight: bold;
+    font-size: 20px;
+    margin-top: 0px;
+  }
+
+  img {
+    margin-top: 0px;
+    margin-bottom: -40px;
+    max-width: 80%;
+    height: 350px;
+  }
+
   .login-area {
     position: relative;
     z-index: 1000;
     width: 100%;
     max-width: 300px;
-    background: rgba(255, 255, 255, 0.95);
+    background: #9daf89;
     padding: 20px;
     border-radius: 8px;
   }
 `;
 
 const PageContent = styled.div`
-  opacity: ${props => props.$isAuthenticated ? 1 : 0};
+  opacity: ${(props) => (props.$isAuthenticated ? 1 : 0)};
   transition: opacity 0.3s ease;
   width: 100%;
   height: 100%;
@@ -69,21 +126,24 @@ const PageContent = styled.div`
 
 const PageTitle = styled.h2`
   margin-bottom: 20px;
-  font-family: 'Playfair Display', serif;
-  color: #2c3e50;
+  font-family: "Playfair Display", serif;
+  color: ${(props) =>
+    props.$isCover
+      ? "#2c3e50"
+      : "#2e6f40"}; /* Use #2e6f40 for non-cover pages */
 `;
 
 const EmptyMessage = styled.p`
   text-align: center;
   color: #95a5a6;
   font-style: italic;
-  margin-top: 40px;
+  margin-top: 6px; /* Reduced margin-top to move the text up */
 `;
 
 const PageNumber = styled.div`
   position: absolute;
   bottom: 20px;
-  font-family: 'Playfair Display', serif;
+  font-family: "Playfair Display", serif;
   color: #95a5a6;
   font-size: 0.9em;
   width: 100%;
@@ -99,7 +159,7 @@ const TurnPageHint = styled.div`
   padding: 10px 15px;
   border-radius: 8px;
   font-size: 0.9em;
-  opacity: ${props => props.$show ? 1 : 0};
+  opacity: ${(props) => (props.$show ? 1 : 0)};
   transition: opacity 0.3s ease;
   pointer-events: none;
 `;
@@ -121,7 +181,7 @@ const NavButton = styled.button`
   padding: 10px 20px;
   border-radius: 8px;
   cursor: pointer;
-  font-family: 'Lato', sans-serif;
+  font-family: "Lato", sans-serif;
   transition: background-color 0.3s ease;
 
   &:hover {
@@ -134,9 +194,41 @@ const NavButton = styled.button`
   }
 `;
 
-const Page = ({ number, children }) => {
+const CameraIcon = styled.img`
+  width: 40px;
+  height: 40px;
+  margin-top: 10px; /* Adjusted to place it above the title */
+  margin-bottom: 10px;
+  cursor: pointer;
+`;
+
+const GuestbookIcon = styled.img`
+  width: 40px;
+  height: 40px;
+  margin-top: 10px; /* Adjusted to place it above the title */
+  margin-bottom: 10px;
+  cursor: pointer;
+`;
+
+const ThankfulIcon = styled.img`
+  width: 50px;
+  height: 50px;
+  margin-top: 10px;
+  margin-bottom: 10px; /* Space between the icon and title */
+  cursor: pointer;
+`;
+
+const MessageIcon = styled.img`
+  width: 67px;
+  height: 67px;
+  margin-top: 3px;
+  margin-bottom: 0px;
+  cursor: pointer;
+`;
+
+const Page = ({ number, isCover, children }) => {
   return (
-    <PageContainer>
+    <PageContainer $isCover={isCover}>
       {children}
       {number && <PageNumber>{number}</PageNumber>}
     </PageContainer>
@@ -146,10 +238,17 @@ const Page = ({ number, children }) => {
 const Book = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [submissions, setSubmissions] = useState([]);
+  const [refreshTrigger, setRefreshTrigger] = useState(false);
   const [showHint, setShowHint] = useState(true);
   const [page, setPage] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
   const bookRef = useRef(null);
+
+  // ✅ Define image upload success handler here
+  const handleImageUploadSuccess = (newImage) => {
+    console.log("New image received:", newImage); // ✅ Debugging step
+    setRefreshTrigger((prev) => !prev); // ✅ Trigger gallery refresh
+  };
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -160,7 +259,7 @@ const Book = () => {
     }
   }, [isAuthenticated]);
 
-  // Add confetti effect
+  // confetti effect
   useEffect(() => {
     if (isAuthenticated) {
       setShowConfetti(true);
@@ -175,58 +274,54 @@ const Book = () => {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (!isAuthenticated) return;
-      
-      if (e.key === 'ArrowRight') {
+
+      if (e.key === "ArrowRight") {
         nextPage();
-      } else if (e.key === 'ArrowLeft') {
+      } else if (e.key === "ArrowLeft") {
         prevPage();
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isAuthenticated]);
 
   const handleLogin = () => {
     setIsAuthenticated(true);
   };
 
-  const handleSubmission = (submission) => {
-    setSubmissions(prev => [...prev, submission]);
-    console.log('New submission:', submission);
-  };
-
   const nextPage = () => {
     if (bookRef.current) {
-      console.log('Attempting to flip to next page');
+      console.log("Attempting to flip to next page");
       bookRef.current.pageFlip().flipNext();
     }
   };
 
   const prevPage = () => {
     if (bookRef.current) {
-      console.log('Attempting to flip to previous page');
+      console.log("Attempting to flip to previous page");
       bookRef.current.pageFlip().flipPrev();
     }
   };
 
   const onFlip = (e) => {
-    console.log('Page flipped to:', e.data);
+    console.log("Page flipped to:", e.data);
     setPage(e.data);
   };
 
-  const photoSubmissions = submissions.filter(sub => sub.image);
-  const messageSubmissions = submissions.filter(sub => sub.message);
+  const photoSubmissions = submissions.filter((sub) => sub.image);
+  const messageSubmissions = submissions.filter((sub) => sub.comment);
 
   return (
     <BookContainer>
+      
       {showConfetti && (
         <Confetti
           width={window.innerWidth}
           height={window.innerHeight}
           numberOfPieces={200}
           recycle={false}
-          colors={['#FFD700', '#FFA500', '#FF69B4', '#87CEEB', '#98FB98']}
+          colors={["#FFD700", "#FFA500", "#FF69B4", "#87CEEB", "#98FB98"]}
         />
       )}
       <HTMLFlipBook
@@ -255,14 +350,13 @@ const Book = () => {
         renderOnlyPageLengthChange={false}
       >
         <div className="page">
-          <Page number="">
+          <Page isCover={true} >
             <CoverContent>
-              <h1>Katie & Alex's Wedding</h1>
-              <p>Guest Book & Photo Album</p>
+              <h1>Katie & Alex</h1>
+              <p>Wedding Guest Book & Photo Album</p>
+              <img src="/images/cat_wedding.png" alt="Wedding image" />
               {!isAuthenticated && (
-                <div 
-                  className="login-area"
-                >
+                <div className="login-area">
                   <LoginForm onLogin={handleLogin} />
                 </div>
               )}
@@ -271,39 +365,48 @@ const Book = () => {
         </div>
 
         <div className="page">
-          <Page number="1">
+          <Page number="1" >
             <PageContent $isAuthenticated={isAuthenticated}>
-              <PageTitle>Share Your Memory</PageTitle>
-              <PhotoUpload onSubmit={handleSubmission} />
+              <GuestbookIcon
+                src="/images/guestbook-icon.svg"
+                alt="Guestbook Icon"
+                onClick={() => console.log("Guestbook Icon Clicked")}
+              />
+              <PageTitle $isCover={false}>Share Your Memory</PageTitle>
+              <PhotoUpload setRefreshTrigger={setRefreshTrigger} onSuccess={handleImageUploadSuccess} />
             </PageContent>
           </Page>
         </div>
 
         <div className="page">
-          <Page number="2">
+          <Page number="2" >
             <PageContent $isAuthenticated={isAuthenticated}>
-              <PageTitle>Photo Gallery</PageTitle>
-              {photoSubmissions.length > 0 ? (
-                <GalleryGrid 
-                  submissions={photoSubmissions} 
-                />
-              ) : (
-                <EmptyMessage>No photos have been shared yet. Be the first!</EmptyMessage>
-              )}
+              <CameraIcon
+                src="/images/cameraheart-icon.svg"
+                alt="Camera Icon"
+                onClick={() => console.log("Camera Icon Clicked")}
+              />
+              <PageTitle $isCover={false}>Photo Gallery</PageTitle>
+              <GalleryGrid refreshTrigger={refreshTrigger} />
             </PageContent>
           </Page>
         </div>
 
         <div className="page">
-          <Page number="3">
+          <Page number="3" >
             <PageContent $isAuthenticated={isAuthenticated}>
-              <PageTitle>Guest Messages</PageTitle>
+              <MessageIcon
+                src="/images/message-icon.svg"
+                alt="Message Icon"
+                onClick={() => console.log("Message Icon Clicked")}
+              />
+              <PageTitle $isCover={false}>Guest Messages</PageTitle>
               {messageSubmissions.length > 0 ? (
-                <GalleryGrid 
-                  submissions={messageSubmissions}
-                />
+                 <GalleryGrid refreshTrigger={refreshTrigger} />
               ) : (
-                <EmptyMessage>No messages have been shared yet. Be the first!</EmptyMessage>
+                <EmptyMessage>
+                  No messages have been shared yet. Be the first!
+                </EmptyMessage>
               )}
             </PageContent>
           </Page>
@@ -312,7 +415,11 @@ const Book = () => {
         <div className="page">
           <Page number="">
             <PageContent $isAuthenticated={isAuthenticated}>
-              <PageTitle>Thank You</PageTitle>
+              <ThankfulIcon
+                src="/images/thankful-icon.svg"
+                alt="Thankful Icon"
+              />
+              <PageTitle $isCover={false}>Thank You</PageTitle>
               <p>For being part of our special day</p>
             </PageContent>
           </Page>
@@ -324,16 +431,10 @@ const Book = () => {
             Use arrow keys or buttons below to turn pages
           </TurnPageHint>
           <NavigationButtons>
-            <NavButton 
-              onClick={prevPage} 
-              disabled={page === 0}
-            >
+            <NavButton onClick={prevPage} disabled={page === 0}>
               ← Previous Page
             </NavButton>
-            <NavButton 
-              onClick={nextPage}
-              disabled={page === 4}
-            >
+            <NavButton onClick={nextPage} disabled={page === 4}>
               Next Page →
             </NavButton>
           </NavigationButtons>
@@ -343,4 +444,4 @@ const Book = () => {
   );
 };
 
-export default Book; 
+export default Book;
