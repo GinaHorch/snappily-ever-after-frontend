@@ -49,6 +49,21 @@ const Button = styled.button`
   }
 `;
 
+const AdminButton = styled.button`
+  background: none;
+  border: none;
+  color: #2e6f40;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 10px;
+  padding: 5px;
+
+  &:hover {
+    color: #34495e;
+  }
+`;
+
 const ErrorMessage = styled.p`
   color: #e74c3c;
   font-size: 14px;
@@ -56,32 +71,59 @@ const ErrorMessage = styled.p`
 `;
 
 const LoginForm = ({ onLogin }) => {
-  const [passcode, setPasscode] = useState('');
+  const [isAdminMode, setIsAdminMode] = useState(false);
+  const [formData, setFormData] = useState({
+    username: '',
+    password: ''
+  });
   const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Temporary mock authentication
     try {
-      // Use "PreWedding" as the username for guests
-      await authService.login("PreWedding", passcode);
+      if (isAdminMode) {
+        // Admin login with username and password
+        await authService.login(formData.username, formData.password);
+      } else {
+        // Guest login with just the password
+        await authService.login(null, formData.password);
+      }
       onLogin();
       setError('');
     } catch (error) {
-      setError('Incorrect passcode. Please try again.');
+      setError(isAdminMode ? 'Invalid admin credentials.' : 'Incorrect passcode. Please try again.');
     }
+  };
+
+  const toggleAdminMode = (e) => {
+    e.preventDefault();
+    setIsAdminMode(!isAdminMode);
+    setFormData({ username: '', password: '' });
+    setError('');
   };
 
   return (
     <FormContainer onSubmit={handleSubmit}>
+      {isAdminMode && (
+        <Input
+          type="text"
+          placeholder="Admin Username"
+          value={formData.username}
+          onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
+          required
+        />
+      )}
       <Input
         type="password"
-        placeholder="Enter event password"
-        value={passcode}
-        onChange={(e) => setPasscode(e.target.value)}
+        placeholder={isAdminMode ? "Admin Password" : "Enter event password"}
+        value={formData.password}
+        onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
         required
       />
-      <Button type="submit">Enter Guestbook</Button>
+      <Button type="submit">{isAdminMode ? 'Admin Login' : 'Enter Guestbook'}</Button>
+      <AdminButton onClick={toggleAdminMode}>
+        {isAdminMode ? '← Back to Guest Login' : 'Admin Login →'}
+      </AdminButton>
       {error && <ErrorMessage>{error}</ErrorMessage>}
     </FormContainer>
   );
