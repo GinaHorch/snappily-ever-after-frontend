@@ -6,11 +6,13 @@ import LoginForm from "./LoginForm";
 import PhotoUpload from "./PhotoUpload";
 import GalleryGrid from "./GalleryGrid";
 
-const PageContainer = styled.div`
-  background-color: ${(props) => (props.isCover ? "#9daf89" : "#FAF9F6")};
+const PageContainer = styled.div.attrs(props => ({
+  'data-is-cover': props.$isCover
+}))`
+  background-color: ${(props) => (props.$isCover ? "#9daf89" : "#FAF9F6")};
   border: 1px solid #c2c2c2;
   border-radius: ${(props) =>
-    props.isCover ? "0 10px 10px 0" : "0"}; /* Only rounded corners on cover */
+    props.$isCover ? "0 10px 10px 0" : "0"}; /* Only rounded corners on cover */
   box-shadow: inset -7px 0 30px -7px rgba(0, 0, 0, 0.4);
   height: 100%;
   width: 100%;
@@ -28,7 +30,7 @@ const PageContainer = styled.div`
     left: 1cm;
     right: 1cm;
     bottom: 1cm;
-    border: 2px solid ${(props) => (props.isCover ? "white" : "#2e6f40")}; /* White border for cover, #2e6f40 for other pages */
+    border: 2px solid ${(props) => (props.$isCover ? "white" : "#2e6f40")}; /* White border for cover, #2e6f40 for other pages */
     border-radius: 20px;
     pointer-events: none;
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
@@ -40,7 +42,7 @@ const PageContainer = styled.div`
 
   /* Book spine effect, only on cover */
   ${(props) =>
-    props.isCover &&
+    props.$isCover &&
     `&::after {
       content: "";
       position: absolute;
@@ -126,7 +128,7 @@ const PageTitle = styled.h2`
   margin-bottom: 20px;
   font-family: "Playfair Display", serif;
   color: ${(props) =>
-    props.isCover
+    props.$isCover
       ? "#2c3e50"
       : "#2e6f40"}; /* Use #2e6f40 for non-cover pages */
 `;
@@ -226,8 +228,8 @@ const MessageIcon = styled.img`
 
 const Page = ({ number, isCover, children }) => {
   return (
-    <PageContainer isCover={isCover}>
-       {children}
+    <PageContainer $isCover={isCover}>
+      {children}
       {number && <PageNumber>{number}</PageNumber>}
     </PageContainer>
   );
@@ -370,7 +372,7 @@ const Book = () => {
                 alt="Guestbook Icon"
                 onClick={() => console.log("Guestbook Icon Clicked")}
               />
-              <PageTitle isCover={false}>Share Your Memory</PageTitle>
+              <PageTitle $isCover={false}>Share Your Memory</PageTitle>
               <PhotoUpload setRefreshTrigger={setRefreshTrigger} onSuccess={handleImageUploadSuccess} />
             </PageContent>
           </Page>
@@ -384,7 +386,7 @@ const Book = () => {
                 alt="Camera Icon"
                 onClick={() => console.log("Camera Icon Clicked")}
               />
-              <PageTitle isCover={false}>Photo Gallery</PageTitle>
+              <PageTitle $isCover={false}>Photo Gallery</PageTitle>
               <GalleryGrid refreshTrigger={refreshTrigger} />
             </PageContent>
           </Page>
@@ -393,13 +395,12 @@ const Book = () => {
         <div className="page">
           <Page number="3" >
             <PageContent $isAuthenticated={isAuthenticated}>
-              {/* Move the Guestbook Icon above the title */}
               <MessageIcon
                 src="/images/message-icon.svg"
                 alt="Message Icon"
                 onClick={() => console.log("Message Icon Clicked")}
               />
-              <PageTitle isCover={false}>Guest Messages</PageTitle>
+              <PageTitle $isCover={false}>Guest Messages</PageTitle>
               {messageSubmissions.length > 0 ? (
                  <GalleryGrid refreshTrigger={refreshTrigger} />
               ) : (
@@ -418,7 +419,7 @@ const Book = () => {
                 src="/images/thankful-icon.svg"
                 alt="Thankful Icon"
               />
-              <PageTitle isCover={false}>Thank You</PageTitle>
+              <PageTitle $isCover={false}>Thank You</PageTitle>
               <p>For being part of our special day</p>
             </PageContent>
           </Page>
