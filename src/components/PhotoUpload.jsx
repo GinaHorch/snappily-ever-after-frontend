@@ -99,12 +99,23 @@ const ErrorMessage = styled.p`
   margin-top: 5px;
 `;
 
-const PhotoUpload = ({ onSuccess }) => {
+const SuccessMessage = styled.p`
+  color: green;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 10px;
+`;
+
+const PhotoUpload = ({ setRefreshTrigger, onSuccess }) => {
+  if (!setRefreshTrigger) {
+    console.error("setRefreshTrigger is missing in PhotoUpload");
+  }
   const [guestName, setGuestName] = useState("");
   const [message, setMessage] = useState("");
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState("");
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");  // ✅ Add success message state
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const onDrop = useCallback((acceptedFiles) => {
@@ -131,6 +142,8 @@ const PhotoUpload = ({ onSuccess }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Input validation
     if (!guestName.trim()) {
       setError("Please enter your name");
       return;
@@ -144,37 +157,43 @@ const PhotoUpload = ({ onSuccess }) => {
     setError("");
 
     try {
-      if (image) {
-        // Upload image with message
-        await galleryService.uploadImage({
-          imageFile: image,
-          caption: message,
-          message: message,
-          name: guestName,
-        });
-      } else {
-        // Add message without image
-        // Note: This might need to be adjusted based on your backend implementation
-        await galleryService.uploadImage({
-          message: message,
-          name: guestName,
-        });
+      // Upload image & message
+      const response = await galleryService.uploadImage({
+        imageFile: image || null,
+        comment: message,
+        name: guestName,
+    });
+
+      console.log("Upload successful:", response); // ✅ Debugging step
+
+      // ✅ Trigger GalleryGrid update if onSuccess exists
+      if (onSuccess) {
+        console.log("Triggering onSuccess callback...");
+        onSuccess(response);
       }
 
+      // ✅ Trigger refresh in GalleryGrid
+      setRefreshTrigger((prev) => {
+        console.log("Toggling refreshTrigger. Previous:", prev, "New:", !prev); // ✅ Step 6: Debug state update
+        return !prev;
+    });
+    
+      // ✅ Show success message
+      setSuccessMessage("Your memory has been shared successfully! 🎉");
       // Reset form
       setGuestName("");
       setMessage("");
       setImage(null);
       setPreview("");
 
-      // Notify parent component of success
-      if (onSuccess) {
-        onSuccess();
-      }
+      // ✅ Hide success message after a few seconds
+      setTimeout(() => setSuccessMessage(""), 4000);
+
     } catch (err) {
-      setError(err.error || "Failed to upload. Please try again.");
+        console.error("Upload error:", err); // Debugging step
+        setError(err.error || "Failed to upload. Please try again.");
     } finally {
-      setIsSubmitting(false);
+        setIsSubmitting(false);
     }
   };
 
@@ -221,6 +240,7 @@ const PhotoUpload = ({ onSuccess }) => {
           {isSubmitting ? "Sharing..." : "Share Your Memory"}
         </Button>
       </Form>
+      {successMessage && <SuccessMessage>{successMessage}</SuccessMessage>}
     </UploadContainer>
   );
 };

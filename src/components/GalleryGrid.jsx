@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { galleryService } from '../services/gallery';
 import { authService } from '../services/auth';
+import PhotoUpload from './PhotoUpload';
 
 const Grid = styled.div`
   display: grid;
@@ -132,29 +133,47 @@ const ErrorMessage = styled.div`
   padding: 20px;
 `;
 
-const GalleryGrid = () => {
+const GalleryGrid = ({ refreshTrigger }) => {
+  console.log("GalleryGrid received refreshTrigger:", refreshTrigger); // ✅ Debugging step
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const isAdmin = authService.isAdmin();
 
   useEffect(() => {
+    console.log("useEffect triggered on mount"); // ✅ Debugging
     fetchSubmissions();
-  }, []);
+  }, []); // ✅ Runs on mount
+  
+  useEffect(() => {
+    if (refreshTrigger) {
+      console.log("Refresh Trigger Activated! Fetching submissions again..."); // ✅ Debugging
+      fetchSubmissions();
+    }
+  }, [refreshTrigger]); // ✅ Runs when a new image is uploaded
 
   const fetchSubmissions = async () => {
+    console.log("fetchSubmissions() called");  // ✅ Check if function runs
     try {
       setLoading(true);
       const data = await galleryService.getAllImages();
+      console.log("Fetched data from API:", data); // ✅ Check API response
       setSubmissions(data);
       setError(null);
     } catch (err) {
       setError('Failed to load images. Please try again later.');
       console.error('Error fetching submissions:', err);
+      setError("Failed to load Images. Please try again later.")
     } finally {
       setLoading(false);
     }
   };
+
+  const handleImageUploadSuccess = (newImage) => {
+    console.log("New image received:", newImage); // ✅ Debugging step
+    setSubmissions((prevSubmissions) => [...prevSubmissions, newImage]);
+  };
+  
 
   const handleDelete = async (imageId) => {
     if (!isAdmin) return;
@@ -203,7 +222,7 @@ const GalleryGrid = () => {
   }
 
   return (
-    <Grid>
+   <Grid>
       {submissions.map((submission) => (
         <Card key={submission.id}>
           {isAdmin && (
@@ -211,15 +230,15 @@ const GalleryGrid = () => {
               Delete
             </DeleteButton>
           )}
-          {submission.image_url && (
+          {submission.image && (
             <ImageContainer>
               <Image 
-                src={submission.image_url} 
+                src={submission.image} 
                 alt={`Photo by ${submission.name}`} 
               />
               <ImageOverlay className="overlay">
                 <DownloadButton
-                  onClick={() => handleDownload(submission.image_url, submission.name)}
+                  onClick={() => handleDownload(submission.image, submission.name)}
                 >
                   Download Photo
                 </DownloadButton>
@@ -228,8 +247,8 @@ const GalleryGrid = () => {
           )}
           <MessageContent>
             <GuestName>{submission.name}</GuestName>
-            {submission.message && (
-              <Message>{submission.message}</Message>
+            {submission.comment && (
+              <Message>{submission.comment}</Message>
             )}
             <Timestamp>
               {new Date(submission.uploaded_at).toLocaleDateString('en-AU', {

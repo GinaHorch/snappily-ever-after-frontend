@@ -5,7 +5,7 @@ export const galleryService = {
   getAllImages: async (groupId = null) => {
     try {
       const params = groupId ? { group: groupId } : {};
-      const response = await api.get('/gallery/images/', { params });
+      const response = await api.get('/images/', { params });
       return response.data;
     } catch (error) {
       throw error.response?.data || { error: 'Failed to fetch images' };
@@ -15,7 +15,7 @@ export const galleryService = {
   // Get single image by ID
   getImage: async (imageId) => {
     try {
-      const response = await api.get(`/gallery/images/${imageId}/`);
+      const response = await api.get(`/images/${imageId}/`);
       return response.data;
     } catch (error) {
       throw error.response?.data || { error: 'Failed to fetch image' };
@@ -23,15 +23,18 @@ export const galleryService = {
   },
 
   // Upload new image with caption and message
-  uploadImage: async ({ imageFile, caption = '', message = '', name = '' }) => {
+  uploadImage: async ({ imageFile = null, comment = '', name = '' }) => {
     try {
       const formData = new FormData();
-      formData.append('image', imageFile);
-      formData.append('caption', caption);
-      formData.append('message', message);
+      // formData.append('image', imageFile);
+      formData.append('comment', comment);
       formData.append('name', name);
 
-      const response = await api.post('/gallery/images/', formData, {
+      if (imageFile) {
+        formData.append('image', imageFile);
+      }
+
+      const response = await api.post('/images/', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -45,7 +48,7 @@ export const galleryService = {
   // Update image details (caption, message)
   updateImage: async (imageId, { caption, message }) => {
     try {
-      const response = await api.put(`/gallery/images/${imageId}/`, {
+      const response = await api.put(`/images/${imageId}/`, {
         caption,
         message,
       });
@@ -58,7 +61,7 @@ export const galleryService = {
   // Admin only: Delete image
   deleteImage: async (imageId) => {
     try {
-      const response = await api.delete(`/gallery/images/${imageId}/delete/`);
+      const response = await api.delete(`/images/${imageId}/delete/`);
       return response.data;
     } catch (error) {
       throw error.response?.data || { error: 'Failed to delete image' };
@@ -68,7 +71,7 @@ export const galleryService = {
   // Admin only: Batch delete images
   batchDeleteImages: async (imageIds) => {
     try {
-      const response = await api.post('/gallery/images/batch-delete/', {
+      const response = await api.post('/images/batch-delete/', {
         image_ids: imageIds,
       });
       return response.data;
@@ -80,7 +83,7 @@ export const galleryService = {
   // Get images by group
   getImagesByGroup: async (groupId) => {
     try {
-      const response = await api.get(`/gallery/images/group/${groupId}/`);
+      const response = await api.get(`/images/group/${groupId}/`);
       return response.data;
     } catch (error) {
       throw error.response?.data || { error: 'Failed to fetch group images' };
@@ -90,7 +93,7 @@ export const galleryService = {
   // Admin only: Get all groups with their images
   getAllGroups: async () => {
     try {
-      const response = await api.get('/gallery/groups/');
+      const response = await api.get('/images/groups/');
       return response.data;
     } catch (error) {
       throw error.response?.data || { error: 'Failed to fetch groups' };
@@ -100,7 +103,7 @@ export const galleryService = {
   // Add message to image
   addMessage: async (imageId, { message, name }) => {
     try {
-      const response = await api.post(`/gallery/images/${imageId}/message/`, {
+      const response = await api.post(`/images/${imageId}/message/`, {
         message,
         name,
       });
@@ -113,7 +116,7 @@ export const galleryService = {
   // Get messages for an image
   getImageMessages: async (imageId) => {
     try {
-      const response = await api.get(`/gallery/images/${imageId}/messages/`);
+      const response = await api.get(`/images/${imageId}/messages/`);
       return response.data;
     } catch (error) {
       throw error.response?.data || { error: 'Failed to fetch messages' };
@@ -123,7 +126,7 @@ export const galleryService = {
   // Admin only: Export all data
   exportData: async () => {
     try {
-      const response = await api.get('/gallery/export/', {
+      const response = await api.get('/images/export/', {
         responseType: 'blob',
       });
       return response.data;
