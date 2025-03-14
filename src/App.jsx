@@ -12,7 +12,7 @@ import { authService } from "./services/auth";
 import Confetti from "react-confetti";
 
 const AppContainer = styled.div`
-  min-height: 100vh;
+  min-height: 10px;
   background: #e6e6fa;
   display: flex;
   align-items: center;
