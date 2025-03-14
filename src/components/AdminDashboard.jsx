@@ -14,16 +14,38 @@ const DashboardContainer = styled.div`
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start; /* Align the button correctly */
   margin-bottom: 30px;
+`;
+
+const TitleContainer = styled.div`
+  flex-grow: 1;
+  text-align: center;
 `;
 
 const Title = styled.h1`
   font-family: "Playfair Display", serif;
   color: #2e6f40;
-  margin-left: 98px;
-  margin-right: 25px;
-  margin-top: 20px;
+  margin-top: 60px;
+  margin-bottom: -15px;
+  margin-left: 220px;
+  margin-right: 100px;
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 30px;
+`;
+
+const HeartDivider = styled.img`
+  display: block;
+  margin: 20px auto;
+  padding-bottom: 20px;
+  padding-top: 0px;
+  width: 80%; /* Adjust size as needed */
+  max-width: 400px; /* Optional: To limit the maximum width */
 `;
 
 const TabContainer = styled.div`
@@ -53,8 +75,11 @@ const Card = styled.div`
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 4px #6666b3;
+  max-width: 600px;
   padding: 20px;
+  margin-top: 40px;
   margin-bottom: 20px;
+  margin: 40px auto 20px; // This will horizontally center the card
 `;
 
 const Form = styled.form`
@@ -123,6 +148,7 @@ const StatsGrid = styled.div`
 const StatCard = styled.div`
   background: white;
   padding: 20px;
+  margin-top: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 4px #6666b3;
   text-align: center;
@@ -328,11 +354,22 @@ const AdminDashboard = () => {
       <BackLink to="/">← Back to Guestbook</BackLink>
 
       <Header>
-        <Title> Admin Dashboard </Title>
-        <Button onClick={handleExportData} disabled={loading}>
-          Export Data
-        </Button>
+        <TitleContainer>
+          <Title>Admin Dashboard</Title>
+        </TitleContainer>
+        <ButtonContainer>
+          <Button
+            onClick={handleExportData}
+            disabled={loading}
+            style={{ marginTop: "40px" }}
+          >
+            Export Data
+          </Button>
+        </ButtonContainer>
       </Header>
+
+      {/* Heart Divider Image */}
+      <HeartDivider src="/images/heart-divider.svg" alt="Heart Divider" />
 
       {loading && (
         <LoadingOverlay>
@@ -378,8 +415,7 @@ const AdminDashboard = () => {
         <>
           <Card>
             <HeaderTitle>
-              <FlipSymbol>₊˚⊹♡</FlipSymbol> Update Admin Password{" "}
-              <FlipSymbol flip={true}>₊˚⊹♡</FlipSymbol>
+              Update Admin Password{" "}
             </HeaderTitle>
             <Form onSubmit={handlePasswordChange}>
               <Input
@@ -426,8 +462,7 @@ const AdminDashboard = () => {
 
           <Card>
             <HeaderTitle>
-              <FlipSymbol>₊˚⊹♡</FlipSymbol> Update Guest Access{" "}
-              <FlipSymbol flip={true}>₊˚⊹♡</FlipSymbol>
+              Update Guest Access{" "}
             </HeaderTitle>
             <Form onSubmit={handleGuestCredentialsUpdate}>
               <Input

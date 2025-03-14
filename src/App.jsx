@@ -9,7 +9,7 @@ import Book from "./components/Book";
 import AdminDashboard from "./components/AdminDashboard";
 import styled from "styled-components";
 import { authService } from "./services/auth";
-import Confetti from "react-confetti"; 
+import Confetti from "react-confetti";
 
 const AppContainer = styled.div`
   min-height: 100vh;
@@ -18,8 +18,8 @@ const AppContainer = styled.div`
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  position: relative; 
-  z-index: 1; 
+  position: relative;
+  z-index: 1;
 `;
 
 const AdminLink = styled(Link)`
@@ -32,7 +32,7 @@ const AdminLink = styled(Link)`
   transition: background-color 0.3s ease;
 
   &:hover {
-    background-color: #34495e;
+    background-color: #9daf89;
   }
 `;
 
@@ -41,13 +41,6 @@ const AdminLinkContainer = styled.div`
   top: 20px;
   right: 20px;
   z-index: 1000;
-`;
-
-const FloralPatternSection = styled.div`
-  width: 100%;
-  height: 200px;
-  background: url("public/images/floral-pattern.jpg") no-repeat center center;
-  background-size: cover;
 `;
 
 const ProtectedRoute = ({ children }) => {
@@ -105,9 +98,6 @@ function App() {
             }
           />
         </Routes>
-
-        {/* Add the floral pattern section at the bottom */}
-        <FloralPatternSection />
       </AppContainer>
     </Router>
   );
