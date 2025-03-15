@@ -207,8 +207,10 @@ export const galleryService = {
       
       // First try the API endpoint
       try {
+        console.log('Attempting API endpoint download for image ID:', imageId);
         const response = await api.get(`/images/${imageId}/download/`, {
-          responseType: 'blob'
+          responseType: 'blob',
+          timeout: 5000 // Add 5 second timeout
         });
         
         // Create a download link for the blob
@@ -225,9 +227,16 @@ export const galleryService = {
         document.body.removeChild(a);
         return true;
       } catch (apiError) {
-        console.log('API endpoint download failed, falling back to direct S3:', apiError);
+        // Log detailed API error information
+        console.log('API endpoint download failed, details:', {
+          error: apiError.message,
+          status: apiError.response?.status,
+          statusText: apiError.response?.statusText,
+          endpoint: `/images/${imageId}/download/`
+        });
         
-        // Fallback to direct S3 download
+        console.log('Falling back to direct S3 download');
+        // Fallback to direct S3 download - this is our reliable method
         const downloadWindow = window.open(imageUrl, '_blank');
         if (!downloadWindow) {
           console.error('Pop-up was blocked. Please allow pop-ups for this site.');
