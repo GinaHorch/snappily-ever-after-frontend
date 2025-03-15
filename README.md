@@ -5,13 +5,18 @@ A beautiful digital wedding guestbook that combines the charm of a traditional b
 ## Features
 
 - 📖 Book-like interface with page-turning animations
-- 🔐 Password-protected access for wedding guests
-- 📸 Photo upload functionality
+- 🔐 Secure authentication system with separate admin and guest access
+- 📸 Photo upload functionality with AWS S3 storage
 - 💝 Message submission capability
 - 🖼️ Gallery view for photos and messages
 - ✨ Celebratory confetti animation on login
 - ⌨️ Keyboard navigation support
 - 📱 Responsive design for various screen sizes
+- 👑 Admin dashboard with:
+  - Photo and message statistics
+  - Credential management
+  - Data export functionality
+  - Guest access control
 
 ## For Users
 
@@ -33,51 +38,72 @@ A beautiful digital wedding guestbook that combines the charm of a traditional b
 2. Upload a photo and/or write a message
 3. Your contribution will appear in the gallery for all guests to see
 
-## For Developers
+## For Administrators
 
-### Technical Stack
+### Admin Dashboard
 
+Access the admin dashboard by:
+1. Clicking the "Admin Dashboard" link (top-right corner when logged in as admin)
+2. Using admin credentials to log in
+
+Features include:
+- View total photos and messages statistics
+- Update admin username and password
+- Manage guest access credentials
+- Export all guestbook data
+
+## Technical Details
+
+### Stack
+
+#### Frontend
 - React + Vite
 - styled-components for styling
 - react-pageflip for book animations
 - react-confetti for celebrations
+- Axios for API communication
 
-### Important Note
+#### Backend
+- Django REST Framework
+- AWS S3 for image storage
+- PostgreSQL database
+- Token-based authentication
 
-Currently, all data (photos and messages) is stored in local state only. This means:
-- Data will not persist between page refreshes
-- Uploads are temporary
-- Multiple users cannot see each other's contributions
+### Deployment
 
-This is temporary and will be updated once the backend is connected. The backend will handle:
-- Persistent data storage
-- Real-time updates between users
-- Secure file storage for photos
-- User session management
+- Frontend: Deployed on Vercel
+- Backend: Deployed on Heroku
+- Media Storage: AWS S3
 
-### Getting Started
+### Environment Variables
+
+The application requires the following environment variables:
+
+Frontend (.env):
+```
+VITE_API_URL=https://[your-backend-url]
+VITE_AWS_BUCKET_URL=https://[your-s3-bucket-url]
+```
+
+### Getting Started (Development)
 
 1. Clone the repository
 2. Install dependencies:
    ```bash
    npm install
    ```
-3. Start the development server:
+3. Set up environment variables
+4. Start the development server:
    ```bash
    npm run dev
    ```
 
-### Environment Variables
+## Security Features
 
-Currently, the application uses a hardcoded event password. In production, this should be moved to an environment variable.
-
-## Future Enhancements
-
-- Backend integration for persistent data storage
-- Real-time updates when new content is added
-- Image optimization and compression
-- Download functionality for photos
-- Admin panel for content moderation
+- Separate authentication for admin and guest access
+- Secure credential management
+- AWS S3 for secure image storage
+- Token-based API authentication
 
 ## License
 
