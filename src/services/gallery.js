@@ -205,17 +205,36 @@ export const galleryService = {
     try {
       console.log('Attempting to download image:', imageUrl);
       
-      // Get filename from URL
-      const originalFilename = imageUrl.split('/').pop();
-
-      // Open S3 URL in new window
-      const downloadWindow = window.open(imageUrl, '_blank');
-      if (!downloadWindow) {
-        console.error('Pop-up was blocked. Please allow pop-ups for this site.');
-        throw new Error('Pop-up blocked');
+      // First try the API endpoint
+      try {
+        const response = await api.get(`/images/${imageId}/download/`, {
+          responseType: 'blob'
+        });
+        
+        // Create a download link for the blob
+        const blob = new Blob([response.data], { 
+          type: response.headers['content-type'] 
+        });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = imageUrl.split('/').pop(); // Use original filename
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        return true;
+      } catch (apiError) {
+        console.log('API endpoint download failed, falling back to direct S3:', apiError);
+        
+        // Fallback to direct S3 download
+        const downloadWindow = window.open(imageUrl, '_blank');
+        if (!downloadWindow) {
+          console.error('Pop-up was blocked. Please allow pop-ups for this site.');
+          throw new Error('Pop-up blocked');
+        }
+        return true;
       }
-      
-      return true;
     } catch (error) {
       console.error('Download error:', error);
       throw { error: 'Failed to download image' };
