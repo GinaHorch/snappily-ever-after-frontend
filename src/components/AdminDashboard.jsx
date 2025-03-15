@@ -108,7 +108,7 @@ const Input = styled.input`
 
 const Button = styled.button`
   padding: 10px 20px;
-  background-color: #6666b3;
+  background-color: #2e6f40;
   color: white;
   border: none;
   border-radius: 8px;
@@ -242,6 +242,7 @@ const AdminDashboard = () => {
     oldPassword: "",
     newPassword: "",
     confirmPassword: "",
+    newUsername: "",
   });
 
   // Guest credentials form
@@ -273,8 +274,15 @@ const AdminDashboard = () => {
     setError("");
     setSuccess("");
 
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+    // Validate password confirmation if a new password is being set
+    if (passwordForm.newPassword && passwordForm.newPassword !== passwordForm.confirmPassword) {
       setError("New passwords do not match");
+      return;
+    }
+
+    // Validate that at least one field is being changed
+    if (!passwordForm.newPassword && !passwordForm.newUsername) {
+      setError("Please provide either a new username or password");
       return;
     }
 
@@ -282,16 +290,18 @@ const AdminDashboard = () => {
       setLoading(true);
       await authService.changeAdminPassword(
         passwordForm.oldPassword,
-        passwordForm.newPassword
+        passwordForm.newPassword || null,
+        passwordForm.newUsername || null
       );
-      setSuccess("Password updated successfully");
+      setSuccess("Credentials updated successfully");
       setPasswordForm({
         oldPassword: "",
         newPassword: "",
         confirmPassword: "",
+        newUsername: "",
       });
     } catch (err) {
-      setError(err.error || "Failed to update password");
+      setError(err.error || "Failed to update credentials");
     } finally {
       setLoading(false);
     }
@@ -409,7 +419,7 @@ const AdminDashboard = () => {
         <>
           <Card>
             <HeaderTitle>
-              Update Admin Password{" "}
+              Update Admin Credentials{" "}
             </HeaderTitle>
             <Form onSubmit={handlePasswordChange}>
               <Input
@@ -425,8 +435,19 @@ const AdminDashboard = () => {
                 required
               />
               <Input
+                type="text"
+                placeholder="New Username (optional)"
+                value={passwordForm.newUsername}
+                onChange={(e) =>
+                  setPasswordForm((prev) => ({
+                    ...prev,
+                    newUsername: e.target.value,
+                  }))
+                }
+              />
+              <Input
                 type="password"
-                placeholder="New Password"
+                placeholder="New Password (optional)"
                 value={passwordForm.newPassword}
                 onChange={(e) =>
                   setPasswordForm((prev) => ({
@@ -434,7 +455,6 @@ const AdminDashboard = () => {
                     newPassword: e.target.value,
                   }))
                 }
-                required
               />
               <Input
                 type="password"
@@ -446,10 +466,11 @@ const AdminDashboard = () => {
                     confirmPassword: e.target.value,
                   }))
                 }
-                required
+                disabled={!passwordForm.newPassword}
+                required={!!passwordForm.newPassword}
               />
               <Button type="submit" disabled={loading}>
-                Update Password
+                Update Credentials
               </Button>
             </Form>
           </Card>
