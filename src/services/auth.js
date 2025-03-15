@@ -69,16 +69,37 @@ export const authService = {
     }
   },
 
-  // Admin only: Change admin password
-  changeAdminPassword: async (oldPassword, newPassword) => {
+  // Admin only: Change admin credentials
+  changeAdminPassword: async (currentPassword, newPassword, newUsername = null) => {
     try {
-      const response = await api.put('/users/change-admin-password/', {
-        old_password: oldPassword,
-        new_password: newPassword,
+      const data = {
+        current_password: currentPassword,
+      };
+
+      // Only add fields if they are being changed
+      if (newPassword) {
+        data.new_password = newPassword;
+      }
+      
+      if (newUsername) {
+        data.new_username = newUsername;
+      }
+
+      console.log('Sending credential update request:', {
+        url: '/change-credentials/',
+        data: { ...data, current_password: '***' },
+        headers: api.defaults.headers
       });
+      const response = await api.put('/change-credentials/', data);
       return response.data;
     } catch (error) {
-      throw error.response?.data || { error: 'Failed to change password' };
+      console.error('Credential update error:', {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message,
+        requestData: { ...data, current_password: '***' }
+      });
+      throw error.response?.data || { error: 'Failed to change credentials' };
     }
   },
 }; 
