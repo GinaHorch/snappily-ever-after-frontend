@@ -130,30 +130,92 @@ export const galleryService = {
   // Admin only: Export all data
   exportData: async () => {
     try {
-      const response = await api.get('/images/export-data/', {
-        responseType: 'blob'
-      });
-      return response.data;
+      console.log('Attempting to export data...');
+      const token = localStorage.getItem('token');
+      console.log('Auth token exists:', !!token);
+      
+      // Log the full URL being constructed
+      const baseUrl = api.defaults.baseURL;
+      console.log('Base URL:', baseUrl);
+      
+      // Try multiple endpoint variations
+      const endpoints = [
+        '/images/export-data/',
+        '/images/export-data',
+        '/api/images/export-data/',
+        '/api/images/export-data'
+      ];
+      
+      let lastError = null;
+      
+      for (const endpoint of endpoints) {
+        try {
+          console.log('Trying endpoint:', endpoint);
+          console.log('Full URL:', `${baseUrl}${endpoint}`);
+          
+          const response = await api.get(endpoint, {
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+            }
+          });
+
+          console.log('Success with endpoint:', endpoint);
+          console.log('Response type:', response.headers['content-type']);
+          
+          // Create a Blob from the JSON data
+          const blob = new Blob([JSON.stringify(response.data, null, 2)], {
+            type: 'application/json'
+          });
+
+          // Create a download link and trigger it
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          const date = new Date().toISOString().split('T')[0];
+          a.download = `wedding-guestbook-export-${date}.json`;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+
+          return response.data;
+        } catch (endpointError) {
+          console.log(`Failed with endpoint ${endpoint}:`, endpointError.message);
+          lastError = endpointError;
+          continue; // Try next endpoint
+        }
+      }
+      
+      // If we get here, all endpoints failed
+      throw lastError;
     } catch (error) {
       console.error('Export error:', error);
+      console.error('Response data:', error.response?.data);
+      console.error('Response status:', error.response?.status);
+      console.error('Response headers:', error.response?.headers);
+      console.error('Request URL:', error.config?.url);
+      console.error('Request method:', error.config?.method);
+      console.error('Request headers:', error.config?.headers);
       throw error.response?.data || { error: 'Failed to export data' };
     }
   },
 
   // Download image (admin only)
-  downloadImage: async (imageUrl) => {
+  downloadImage: async (imageUrl, imageId) => {
     try {
-      // Extract image ID from URL
-      const imageId = imageUrl.split('/').pop().split('.')[0];
-      const response = await api.get(`/images/${imageId}/download/`, {
-        responseType: 'blob'
-      });
+      console.log('Attempting to download image:', imageUrl);
       
-      if (!response.data) {
-        throw new Error('Failed to download image');
+      // Get filename from URL
+      const originalFilename = imageUrl.split('/').pop();
+
+      // Open S3 URL in new window
+      const downloadWindow = window.open(imageUrl, '_blank');
+      if (!downloadWindow) {
+        console.error('Pop-up was blocked. Please allow pop-ups for this site.');
+        throw new Error('Pop-up blocked');
       }
       
-      return response.data;
+      return true;
     } catch (error) {
       console.error('Download error:', error);
       throw { error: 'Failed to download image' };

@@ -190,22 +190,22 @@ const GalleryGrid = ({ refreshTrigger }) => {
     }
   };
 
-  const handleDownload = async (imageUrl, name) => {
+  const handleDownload = async (image) => {
     try {
-      const blob = await galleryService.downloadImage(imageUrl);
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = downloadUrl;
+      console.log('Download requested for image:', {
+        fullObject: image,
+        id: image.id,
+        imageUrl: image.image,
+        name: image.name
+      });
       
-      // Create filename from name and timestamp
-      const timestamp = new Date().toISOString().split('T')[0];
-      const fileName = `${name.replace(/\s+/g, '_')}_${timestamp}.jpg`;
-      
-      link.setAttribute('download', fileName);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(downloadUrl);
+      if (!image.id) {
+        console.error('No image ID provided:', image);
+        throw new Error('Image ID is missing');
+      }
+
+      const blob = await galleryService.downloadImage(image.image, image.id);
+      // No need to create another blob and link since the service handles it
     } catch (error) {
       console.error('Error downloading image:', error);
       alert('Sorry, there was an error downloading the image. Please try again.');
@@ -238,7 +238,7 @@ const GalleryGrid = ({ refreshTrigger }) => {
               {isAdmin && (
                 <ImageOverlay className="overlay">
                   <DownloadButton
-                    onClick={() => handleDownload(submission.image, submission.name)}
+                    onClick={() => handleDownload(submission)}
                   >
                     Download Photo
                   </DownloadButton>
