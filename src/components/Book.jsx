@@ -83,11 +83,25 @@ const BookContainer = styled.div`
   .demo-book {
     width: 100% !important;
     max-width: 320px !important;
-    margin: 0 auto !important;
+    margin: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+
+    @media (max-width: 320px) {
+      padding: 0 !important;
+      margin: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      max-width: 100% !important;
+    }
 
     @media (min-width: 769px) {
       max-width: 1400px !important;
     }
+  }
+
+  @media (max-width: 320px) {
+    padding: 0;
   }
 `;
 
