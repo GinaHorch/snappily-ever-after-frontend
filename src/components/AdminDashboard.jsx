@@ -318,22 +318,24 @@ const BackLink = styled(Link)`
   transition: background-color 0.3s ease;
   z-index: 1000;
   font-size: 14px;
-  width: 140px;
+  min-width: 160px;
   text-align: center;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 
   @media (max-width: 768px) {
     padding: 6px 12px;
     top: 15px;
-    left: 15px;
+    left: 50%;
+    transform: translateX(-50%);
   }
 
   @media (max-width: 350px) {
     padding: 6px 10px;
     top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
     font-size: 13px;
+    min-width: 140px;
   }
 
   &:hover {
