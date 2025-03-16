@@ -86,6 +86,7 @@ const BookContainer = styled.div`
     margin: 0 !important;
     left: 0 !important;
     right: 0 !important;
+    position: relative !important;
 
     @media (max-width: 320px) {
       padding: 0 !important;
@@ -95,10 +96,18 @@ const BookContainer = styled.div`
       max-width: 100% !important;
     }
 
-    @media (min-width: 375px) and (max-width: 768px) {
+    @media (min-width: 375px) and (max-width: 411px) {
       max-width: 355px !important;
       margin: 0 auto !important;
       padding: 0 10px !important;
+    }
+
+    @media (min-width: 412px) and (max-width: 768px) {
+      max-width: 392px !important;
+      margin: 0 auto !important;
+      padding: 0 !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
     }
 
     @media (min-width: 769px) {
@@ -110,8 +119,15 @@ const BookContainer = styled.div`
     padding: 0;
   }
 
-  @media (min-width: 375px) and (max-width: 768px) {
+  @media (min-width: 375px) and (max-width: 411px) {
     padding: 10px;
+    height: calc(100vh - 40px);
+  }
+
+  @media (min-width: 412px) and (max-width: 768px) {
+    padding: 0;
+    height: calc(100vh - 40px);
+    justify-content: center;
   }
 `;
 
@@ -606,13 +622,13 @@ const Book = ({ onLogin }) => {
       )}
       <HTMLFlipBook
         ref={bookRef}
-        width={isMobile ? 320 : 550}
-        height={isMobile ? 500 : 733}
+        width={isMobile ? (window.innerWidth >= 412 ? 392 : window.innerWidth >= 375 ? 355 : 320) : 550}
+        height={isMobile ? (window.innerWidth >= 412 ? 750 : 500) : 733}
         size="stretch"
         minWidth={280}
-        maxWidth={isMobile ? 320 : 1100}
+        maxWidth={isMobile ? (window.innerWidth >= 412 ? 392 : window.innerWidth >= 375 ? 355 : 320) : 1100}
         minHeight={400}
-        maxHeight={isMobile ? 500 : window.innerHeight - 100}
+        maxHeight={isMobile ? (window.innerWidth >= 412 ? 750 : 500) : window.innerHeight - 100}
         maxShadowOpacity={0.5}
         showCover={true}
         mobileScrollSupport={isAuthenticated}
