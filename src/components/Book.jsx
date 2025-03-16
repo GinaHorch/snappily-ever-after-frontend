@@ -387,8 +387,19 @@ const Book = ({ onLogin }) => {
   const [showHint, setShowHint] = useState(true);
   const [page, setPage] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const bookRef = useRef(null);
   const isAuthenticated = authService.isAuthenticated();
+
+  // Add resize listener
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Immediately check auth status on mount
   useEffect(() => {
@@ -503,13 +514,13 @@ const Book = ({ onLogin }) => {
       )}
       <HTMLFlipBook
         ref={bookRef}
-        width={320}
-        height={500}
+        width={isMobile ? 320 : 550}
+        height={isMobile ? 500 : 733}
         size="stretch"
         minWidth={280}
-        maxWidth={550}
+        maxWidth={isMobile ? 320 : 550}
         minHeight={400}
-        maxHeight={600}
+        maxHeight={isMobile ? 600 : 733}
         maxShadowOpacity={0.5}
         showCover={true}
         mobileScrollSupport={isAuthenticated}
@@ -519,7 +530,7 @@ const Book = ({ onLogin }) => {
         useMouseEvents={false}
         swipeDistance={0}
         clickEventForward={false}
-        usePortrait={true}
+        usePortrait={isMobile}
         startPage={0}
         onFlip={onFlip}
         drawShadow={true}
