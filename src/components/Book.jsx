@@ -70,14 +70,15 @@ const PageContainer = styled.div.attrs(props => ({
 
 const BookContainer = styled.div`
   width: 100%;
-  height: 100vh;
+  height: calc(100vh - 60px);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 0;
+  padding: 20px;
   margin: 0;
   position: relative;
+  overflow: hidden;
 
   .demo-book {
     width: 100% !important;
@@ -85,7 +86,7 @@ const BookContainer = styled.div`
     margin: 0 auto !important;
 
     @media (min-width: 769px) {
-      max-width: 550px !important;
+      max-width: 1400px !important;
     }
   }
 `;
@@ -372,6 +373,73 @@ const MessageIcon = styled.img`
   cursor: pointer;
 `;
 
+const MemoryPageContent = styled(PageContent)`
+  padding: 30px;
+  gap: 20px;
+
+  @media (max-width: 768px) {
+    padding: 20px;
+    gap: 15px;
+  }
+`;
+
+const MemoryImage = styled.img`
+  width: 100%;
+  max-height: 60%;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+`;
+
+const MemoryMessage = styled.p`
+  font-family: "Lato", sans-serif;
+  font-size: 1.1em;
+  line-height: 1.6;
+  color: #2c3e50;
+  text-align: center;
+  margin: 15px 0;
+  font-style: italic;
+`;
+
+const MemoryFooter = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  margin-top: auto;
+`;
+
+const GuestName = styled.span`
+  font-family: "Playfair Display", serif;
+  font-weight: 600;
+  color: #2e6f40;
+  font-size: 1.2em;
+`;
+
+const DateStamp = styled.span`
+  font-family: "Lato", sans-serif;
+  color: #95a5a6;
+  font-size: 0.9em;
+`;
+
+const MemoryPage = ({ image, message, guestName, date, pageNumber }) => {
+  return (
+    <div className="page">
+      <Page number={pageNumber}>
+        <MemoryPageContent $isAuthenticated={true}>
+          <PageTitle $isCover={false}>A Special Memory</PageTitle>
+          <MemoryImage src={image} alt={`Memory from ${guestName}`} />
+          <MemoryMessage>{message}</MemoryMessage>
+          <MemoryFooter>
+            <GuestName>{guestName}</GuestName>
+            <DateStamp>{new Date(date).toLocaleDateString()}</DateStamp>
+          </MemoryFooter>
+        </MemoryPageContent>
+      </Page>
+    </div>
+  );
+};
+
 const Page = ({ number, isCover, children }) => {
   return (
     <PageContainer $isCover={isCover}>
@@ -518,9 +586,9 @@ const Book = ({ onLogin }) => {
         height={isMobile ? 500 : 733}
         size="stretch"
         minWidth={280}
-        maxWidth={isMobile ? 320 : 550}
+        maxWidth={isMobile ? 320 : 1100}
         minHeight={400}
-        maxHeight={isMobile ? 600 : 733}
+        maxHeight={isMobile ? 500 : window.innerHeight - 100}
         maxShadowOpacity={0.5}
         showCover={true}
         mobileScrollSupport={isAuthenticated}
@@ -607,8 +675,9 @@ const Book = ({ onLogin }) => {
                 src="/images/thankful-icon.svg"
                 alt="Thankful Icon"
               />
-              <PageTitle $isCover={false}>Thank You</PageTitle>
-              <p>For being part of our special day.</p>
+              <PageTitle $isCover={false}>✨ Snappily Ever After! ✨</PageTitle>
+              <p>And just like that, our adventure begins! Thank you for making our day unforgettable – for the laughter, the love, the questionable dance moves, and of course, the snaps! 
+                This book is filled with all the memories you helped create! 💖 With love, Katie & Alex</p>
             </PageContent>
           </Page>
         </div>
