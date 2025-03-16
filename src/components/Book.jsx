@@ -76,6 +76,7 @@ const CoverContent = styled.div`
   align-items: center;
   justify-content: center;
   position: relative;
+  padding: 20px;
 
   h1 {
     pointer-events: none;
@@ -84,6 +85,27 @@ const CoverContent = styled.div`
     font-weight: bold;
     font-size: 60px;
     margin-bottom: 0px;
+    padding: 0 10px;
+
+    @media (max-width: 560px) {
+      font-size: 50px;
+    }
+
+    @media (max-width: 500px) {
+      font-size: 45px;
+      padding: 0 15px;
+    }
+
+    @media (max-width: 400px) {
+      font-size: 40px;
+      padding: 0 10px;
+      margin-top: 20px;
+    }
+
+    @media (max-width: 320px) {
+      font-size: 35px;
+      margin-top: 30px;
+    }
   }
 
   p {
@@ -92,6 +114,20 @@ const CoverContent = styled.div`
     font-weight: bold;
     font-size: 20px;
     margin-top: 0px;
+    padding: 0 10px;
+
+    @media (max-width: 500px) {
+      font-size: 18px;
+      padding: 0 15px;
+    }
+
+    @media (max-width: 400px) {
+      font-size: 16px;
+    }
+
+    @media (max-width: 320px) {
+      font-size: 15px;
+    }
   }
 
   img {
@@ -99,6 +135,29 @@ const CoverContent = styled.div`
     margin-bottom: -40px;
     max-width: 80%;
     height: 350px;
+    object-fit: contain;
+
+    @media (max-width: 560px) {
+      height: 300px;
+      margin-bottom: -30px;
+    }
+
+    @media (max-width: 500px) {
+      height: 250px;
+      margin-bottom: -20px;
+    }
+
+    @media (max-width: 400px) {
+      height: 200px;
+      margin-bottom: -15px;
+      max-width: 90%;
+    }
+
+    @media (max-width: 320px) {
+      height: 180px;
+      margin-bottom: -10px;
+      max-width: 95%;
+    }
   }
 
   .login-area {
@@ -109,6 +168,16 @@ const CoverContent = styled.div`
     background: #9daf89;
     padding: 20px;
     border-radius: 8px;
+
+    @media (max-width: 400px) {
+      max-width: 280px;
+      padding: 15px;
+    }
+
+    @media (max-width: 320px) {
+      max-width: 260px;
+      padding: 12px;
+    }
   }
 `;
 
@@ -189,8 +258,7 @@ const NavigationButtons = styled.div`
   }
 
   @media (max-width: 450px) {
-    max-width: 300px;
-    padding: 12px 15px;
+    gap: 10px;
   }
 `;
 
@@ -202,7 +270,6 @@ const NavButton = styled.button`
   border-radius: 8px;
   cursor: pointer;
   font-family: "Lato", sans-serif;
-  transition: all 0.3s ease;
   white-space: nowrap;
   flex: 1;
   max-width: 150px;
@@ -210,15 +277,11 @@ const NavButton = styled.button`
 
   &:hover {
     background: rgba(46, 111, 64, 1);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   }
 
   &:disabled {
     background: rgba(149, 165, 166, 0.8);
     cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
   }
 
   @media (max-width: 768px) {
@@ -232,7 +295,6 @@ const NavButton = styled.button`
     font-size: 13px;
     max-width: 100px;
     
-    // Simplified text for very small screens
     &[data-direction="prev"]::before {
       content: "← Prev";
     }
@@ -281,7 +343,6 @@ const NavInstructions = styled.div`
   margin-bottom: 10px;
   font-family: "Lato", sans-serif;
   opacity: ${props => props.$show ? 0.8 : 0};
-  transition: opacity 0.3s ease;
 
   @media (max-width: 768px) {
     font-size: 0.85em;
@@ -534,9 +595,6 @@ const Book = ({ onLogin }) => {
       </HTMLFlipBook>
       {isAuthenticated && (
         <>
-          <TurnPageHint $show={showHint}>
-            Use arrow keys or buttons to turn pages
-          </TurnPageHint>
           <NavigationButtons>
             <NavInstructions $show={showHint}>
               Use arrow keys or buttons to turn pages
