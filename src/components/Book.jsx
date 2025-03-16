@@ -95,6 +95,12 @@ const BookContainer = styled.div`
       max-width: 100% !important;
     }
 
+    @media (min-width: 375px) and (max-width: 768px) {
+      max-width: 355px !important;
+      margin: 0 auto !important;
+      padding: 0 10px !important;
+    }
+
     @media (min-width: 769px) {
       max-width: 1400px !important;
     }
@@ -102,6 +108,10 @@ const BookContainer = styled.div`
 
   @media (max-width: 320px) {
     padding: 0;
+  }
+
+  @media (min-width: 375px) and (max-width: 768px) {
+    padding: 10px;
   }
 `;
 
