@@ -173,25 +173,124 @@ const NavigationButtons = styled.div`
   display: flex;
   gap: 20px;
   z-index: 1000;
+  width: auto;
+  justify-content: center;
+  padding: 0 20px;
+  flex-direction: column;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    gap: 10px;
+    bottom: 15px;
+    width: 100%;
+    max-width: 400px;
+    background: linear-gradient(to top, rgba(255,255,255,0.95) 60%, rgba(255,255,255,0));
+    padding: 15px 20px;
+  }
+
+  @media (max-width: 450px) {
+    max-width: 300px;
+    padding: 12px 15px;
+  }
 `;
 
 const NavButton = styled.button`
-  background: rgba(44, 62, 80, 0.8);
+  background: rgba(46, 111, 64, 0.9);
   color: white;
   border: none;
   padding: 10px 20px;
   border-radius: 8px;
   cursor: pointer;
   font-family: "Lato", sans-serif;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  flex: 1;
+  max-width: 150px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 
   &:hover {
-    background: rgba(44, 62, 80, 1);
+    background: rgba(46, 111, 64, 1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   }
 
   &:disabled {
-    background: rgba(44, 62, 80, 0.4);
+    background: rgba(149, 165, 166, 0.8);
     cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  @media (max-width: 768px) {
+    padding: 12px 15px;
+    font-size: 14px;
+    max-width: 120px;
+  }
+
+  @media (max-width: 450px) {
+    padding: 10px;
+    font-size: 13px;
+    max-width: 100px;
+    
+    // Simplified text for very small screens
+    &[data-direction="prev"]::before {
+      content: "← Prev";
+    }
+    
+    &[data-direction="next"]::before {
+      content: "Next →";
+    }
+    
+    span {
+      display: none;
+    }
+  }
+
+  @media (max-width: 360px) {
+    max-width: 80px;
+    
+    &[data-direction="prev"]::before {
+      content: "←";
+    }
+    
+    &[data-direction="next"]::before {
+      content: "→";
+    }
+  }
+`;
+
+const NavButtonContainer = styled.div`
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  width: 100%;
+
+  @media (max-width: 768px) {
+    gap: 15px;
+  }
+
+  @media (max-width: 450px) {
+    gap: 10px;
+  }
+`;
+
+const NavInstructions = styled.div`
+  color: #2e6f40;
+  font-size: 0.9em;
+  text-align: center;
+  margin-bottom: 10px;
+  font-family: "Lato", sans-serif;
+  opacity: ${props => props.$show ? 0.8 : 0};
+  transition: opacity 0.3s ease;
+
+  @media (max-width: 768px) {
+    font-size: 0.85em;
+    margin-bottom: 8px;
+  }
+
+  @media (max-width: 450px) {
+    font-size: 0.8em;
+    margin-bottom: 6px;
   }
 `;
 
@@ -436,15 +535,28 @@ const Book = ({ onLogin }) => {
       {isAuthenticated && (
         <>
           <TurnPageHint $show={showHint}>
-            Use arrow keys or buttons below to turn pages
+            Use arrow keys or buttons to turn pages
           </TurnPageHint>
           <NavigationButtons>
-            <NavButton onClick={prevPage} disabled={page === 0}>
-              ← Previous Page
-            </NavButton>
-            <NavButton onClick={nextPage} disabled={page === 4}>
-              Next Page →
-            </NavButton>
+            <NavInstructions $show={showHint}>
+              Use arrow keys or buttons to turn pages
+            </NavInstructions>
+            <NavButtonContainer>
+              <NavButton 
+                onClick={prevPage} 
+                disabled={page === 0}
+                data-direction="prev"
+              >
+                <span>← Previous Page</span>
+              </NavButton>
+              <NavButton 
+                onClick={nextPage} 
+                disabled={page === 4}
+                data-direction="next"
+              >
+                <span>Next Page →</span>
+              </NavButton>
+            </NavButtonContainer>
           </NavigationButtons>
         </>
       )}
