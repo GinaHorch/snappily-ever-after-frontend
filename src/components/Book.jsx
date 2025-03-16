@@ -6,6 +6,7 @@ import LoginForm from "./LoginForm";
 import PhotoUpload from "./PhotoUpload";
 import GalleryGrid from "./GalleryGrid";
 import { authService } from "../services/auth";
+import { Link } from "react-router-dom";
 
 const PageContainer = styled.div.attrs(props => ({
   'data-is-cover': props.$isCover
@@ -17,28 +18,36 @@ const PageContainer = styled.div.attrs(props => ({
   box-shadow: inset -7px 0 30px -7px rgba(0, 0, 0, 0.4);
   height: 100%;
   width: 100%;
-  padding: 1cm;
+  padding: 0.3cm;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   position: relative;
+  overflow: hidden;
+
+  @media (min-width: 769px) {
+    padding: 0.5cm;
+  }
 
   &::before {
     content: "";
     position: absolute;
-    top: 1cm;
-    left: 1cm;
-    right: 1cm;
-    bottom: 1cm;
-    border: 2px solid ${(props) => (props.$isCover ? "white" : "#2e6f40")}; /* White border for cover, #2e6f40 for other pages */
+    top: 0.3cm;
+    left: 0.3cm;
+    right: 0.3cm;
+    bottom: 0.3cm;
+    border: 2px solid ${(props) => (props.$isCover ? "white" : "#2e6f40")};
     border-radius: 20px;
     pointer-events: none;
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
-    border-top-left-radius: 30px;
-    border-top-right-radius: 30px;
-    border-bottom-left-radius: 30px;
-    border-bottom-right-radius: 30px;
+
+    @media (max-width: 768px) {
+      top: 0.3cm;
+      left: 0.3cm;
+      right: 0.3cm;
+      bottom: 0.3cm;
+    }
   }
 
   /* Book spine effect, only on cover */
@@ -60,11 +69,25 @@ const PageContainer = styled.div.attrs(props => ({
 `;
 
 const BookContainer = styled.div`
-  width: 90vw;
-  height: 90vh;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+  position: relative;
+
+  .demo-book {
+    width: 100% !important;
+    max-width: 320px !important;
+    margin: 0 auto !important;
+
+    @media (min-width: 769px) {
+      max-width: 550px !important;
+    }
+  }
 `;
 
 const CoverContent = styled.div`
@@ -74,9 +97,18 @@ const CoverContent = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   position: relative;
-  padding: 20px;
+  padding: 10px;
+  overflow-y: auto;
+
+  @media (max-width: 450px) {
+    padding: 8px;
+  }
+
+  @media (max-width: 320px) {
+    padding: 5px;
+  }
 
   h1 {
     pointer-events: none;
@@ -86,25 +118,28 @@ const CoverContent = styled.div`
     font-size: 60px;
     margin-bottom: 0px;
     padding: 0 10px;
+    margin-top: 10px;
 
     @media (max-width: 560px) {
       font-size: 50px;
+      margin-top: 5px;
     }
 
     @media (max-width: 500px) {
       font-size: 45px;
       padding: 0 15px;
+      margin-top: 0;
     }
 
     @media (max-width: 400px) {
       font-size: 40px;
       padding: 0 10px;
-      margin-top: 20px;
+      margin-top: 0;
     }
 
     @media (max-width: 320px) {
       font-size: 35px;
-      margin-top: 30px;
+      margin-top: 0;
     }
   }
 
@@ -131,31 +166,31 @@ const CoverContent = styled.div`
   }
 
   img {
-    margin-top: 0px;
-    margin-bottom: -40px;
+    margin-top: 10px;
+    margin-bottom: -20px;
     max-width: 80%;
-    height: 350px;
+    height: 300px;
     object-fit: contain;
 
     @media (max-width: 560px) {
-      height: 300px;
-      margin-bottom: -30px;
+      height: 250px;
+      margin-bottom: -15px;
     }
 
     @media (max-width: 500px) {
-      height: 250px;
-      margin-bottom: -20px;
+      height: 200px;
+      margin-bottom: -10px;
     }
 
     @media (max-width: 400px) {
-      height: 200px;
-      margin-bottom: -15px;
+      height: 180px;
+      margin-bottom: -5px;
       max-width: 90%;
     }
 
     @media (max-width: 320px) {
-      height: 180px;
-      margin-bottom: -10px;
+      height: 160px;
+      margin-bottom: 0;
       max-width: 95%;
     }
   }
@@ -168,22 +203,25 @@ const CoverContent = styled.div`
     background: #9daf89;
     padding: 20px;
     border-radius: 8px;
+    margin-top: auto;
+    margin-bottom: 20px;
 
     @media (max-width: 400px) {
-      max-width: 280px;
+      max-width: 260px;
       padding: 15px;
+      margin-top: 10px;
     }
 
     @media (max-width: 320px) {
-      max-width: 260px;
-      padding: 12px;
+      max-width: 240px;
+      padding: 10px;
+      margin: 10px auto;
     }
   }
 `;
 
 const PageContent = styled.div`
   opacity: ${(props) => (props.$isAuthenticated ? 1 : 0)};
-  transition: opacity 0.3s ease;
   width: 100%;
   height: 100%;
   display: flex;
@@ -236,28 +274,20 @@ const TurnPageHint = styled.div`
 
 const NavigationButtons = styled.div`
   position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: 0;
+  left: 0;
+  right: 0;
   display: flex;
+  flex-direction: row;
   gap: 20px;
-  z-index: 1000;
-  width: auto;
-  justify-content: center;
-  padding: 0 20px;
-  flex-direction: column;
   align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  background: linear-gradient(to top, rgba(255,255,255,1) 0%, rgba(255,255,255,0.95) 70%, rgba(255,255,255,0) 100%);
+  padding: 10px;
+  height: 60px;
 
-  @media (max-width: 768px) {
-    gap: 10px;
-    bottom: 15px;
-    width: 100%;
-    max-width: 400px;
-    background: linear-gradient(to top, rgba(255,255,255,0.95) 60%, rgba(255,255,255,0));
-    padding: 15px 20px;
-  }
-
-  @media (max-width: 450px) {
+  @media (max-width: 480px) {
     gap: 10px;
   }
 `;
@@ -266,13 +296,15 @@ const NavButton = styled.button`
   background: rgba(46, 111, 64, 0.9);
   color: white;
   border: none;
-  padding: 10px 20px;
+  padding: 8px 15px;
   border-radius: 8px;
   cursor: pointer;
   font-family: "Lato", sans-serif;
   white-space: nowrap;
   flex: 1;
-  max-width: 150px;
+  max-width: 120px;
+  min-height: 35px;
+  font-size: 13px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 
   &:hover {
@@ -284,32 +316,15 @@ const NavButton = styled.button`
     cursor: not-allowed;
   }
 
-  @media (max-width: 768px) {
-    padding: 12px 15px;
+  @media (min-width: 769px) {
+    padding: 10px 20px;
     font-size: 14px;
-    max-width: 120px;
-  }
-
-  @media (max-width: 450px) {
-    padding: 10px;
-    font-size: 13px;
-    max-width: 100px;
-    
-    &[data-direction="prev"]::before {
-      content: "← Prev";
-    }
-    
-    &[data-direction="next"]::before {
-      content: "Next →";
-    }
-    
-    span {
-      display: none;
-    }
+    max-width: 150px;
   }
 
   @media (max-width: 360px) {
     max-width: 80px;
+    padding: 8px 10px;
     
     &[data-direction="prev"]::before {
       content: "←";
@@ -318,40 +333,10 @@ const NavButton = styled.button`
     &[data-direction="next"]::before {
       content: "→";
     }
-  }
-`;
-
-const NavButtonContainer = styled.div`
-  display: flex;
-  gap: 20px;
-  justify-content: center;
-  width: 100%;
-
-  @media (max-width: 768px) {
-    gap: 15px;
-  }
-
-  @media (max-width: 450px) {
-    gap: 10px;
-  }
-`;
-
-const NavInstructions = styled.div`
-  color: #2e6f40;
-  font-size: 0.9em;
-  text-align: center;
-  margin-bottom: 10px;
-  font-family: "Lato", sans-serif;
-  opacity: ${props => props.$show ? 0.8 : 0};
-
-  @media (max-width: 768px) {
-    font-size: 0.85em;
-    margin-bottom: 8px;
-  }
-
-  @media (max-width: 450px) {
-    font-size: 0.8em;
-    margin-bottom: 6px;
+    
+    span {
+      display: none;
+    }
   }
 `;
 
@@ -405,12 +390,41 @@ const Book = ({ onLogin }) => {
   const bookRef = useRef(null);
   const isAuthenticated = authService.isAuthenticated();
 
-  // Add effect to fetch submissions when auth state changes
+  // Immediately check auth status on mount
   useEffect(() => {
     if (isAuthenticated) {
-      setRefreshTrigger(prev => !prev); // This will trigger a refresh in GalleryGrid
+      setRefreshTrigger(prev => !prev);
     }
   }, [isAuthenticated]);
+
+  const handleLogin = async () => {
+    try {
+      await onLogin();
+      
+      // Force immediate state updates
+      const isAuthed = authService.isAuthenticated();
+      if (isAuthed) {
+        // Reset book state
+        if (bookRef.current && bookRef.current.pageFlip) {
+          bookRef.current.pageFlip().flip(0);
+        }
+        setPage(0);
+        
+        // Update UI state
+        setShowConfetti(true);
+        setRefreshTrigger(prev => !prev);
+        
+        // Force a re-render after a brief delay on mobile
+        if (window.innerWidth <= 768) {
+          setTimeout(() => {
+            setRefreshTrigger(prev => !prev);
+          }, 100);
+        }
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+    }
+  };
 
   // ✅ Define image upload success handler here
   const handleImageUploadSuccess = (newImage) => {
@@ -454,19 +468,15 @@ const Book = ({ onLogin }) => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isAuthenticated]);
 
-  const handleLogin = () => {
-    onLogin(); // Call the parent's onLogin handler
-  };
-
   const nextPage = () => {
-    if (bookRef.current) {
+    if (bookRef.current && bookRef.current.pageFlip) {
       console.log("Attempting to flip to next page");
       bookRef.current.pageFlip().flipNext();
     }
   };
 
   const prevPage = () => {
-    if (bookRef.current) {
+    if (bookRef.current && bookRef.current.pageFlip) {
       console.log("Attempting to flip to previous page");
       bookRef.current.pageFlip().flipPrev();
     }
@@ -482,7 +492,6 @@ const Book = ({ onLogin }) => {
 
   return (
     <BookContainer>
-      
       {showConfetti && (
         <Confetti
           width={window.innerWidth}
@@ -494,18 +503,18 @@ const Book = ({ onLogin }) => {
       )}
       <HTMLFlipBook
         ref={bookRef}
-        width={550}
-        height={733}
+        width={320}
+        height={500}
         size="stretch"
-        minWidth={315}
-        maxWidth={1000}
+        minWidth={280}
+        maxWidth={550}
         minHeight={400}
-        maxHeight={1533}
+        maxHeight={600}
         maxShadowOpacity={0.5}
         showCover={true}
         mobileScrollSupport={isAuthenticated}
         className="demo-book"
-        disabled={true}
+        disabled={!isAuthenticated}
         flippingTime={1000}
         useMouseEvents={false}
         swipeDistance={0}
@@ -515,7 +524,7 @@ const Book = ({ onLogin }) => {
         onFlip={onFlip}
         drawShadow={true}
         autoSize={true}
-        renderOnlyPageLengthChange={false}
+        key={isAuthenticated ? 'auth' : 'unauth'}
       >
         <div className="page">
           <Page isCover={true} >
@@ -594,29 +603,22 @@ const Book = ({ onLogin }) => {
         </div>
       </HTMLFlipBook>
       {isAuthenticated && (
-        <>
-          <NavigationButtons>
-            <NavInstructions $show={showHint}>
-              Use arrow keys or buttons to turn pages
-            </NavInstructions>
-            <NavButtonContainer>
-              <NavButton 
-                onClick={prevPage} 
-                disabled={page === 0}
-                data-direction="prev"
-              >
-                <span>← Previous Page</span>
-              </NavButton>
-              <NavButton 
-                onClick={nextPage} 
-                disabled={page === 4}
-                data-direction="next"
-              >
-                <span>Next Page →</span>
-              </NavButton>
-            </NavButtonContainer>
-          </NavigationButtons>
-        </>
+        <NavigationButtons>
+          <NavButton 
+            onClick={prevPage} 
+            disabled={page === 0}
+            data-direction="prev"
+          >
+            <span>← Previous Page</span>
+          </NavButton>
+          <NavButton 
+            onClick={nextPage} 
+            disabled={page === 4}
+            data-direction="next"
+          >
+            <span>Next Page →</span>
+          </NavButton>
+        </NavigationButtons>
       )}
     </BookContainer>
   );

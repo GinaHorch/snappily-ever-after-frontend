@@ -27,6 +27,22 @@ const AppContainer = styled.div`
   padding: 20px;
 `;
 
+const AdminLinkContainer = styled.div`
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+
+  @media (max-width: 768px) {
+    right: 10px;
+  }
+
+  @media (max-width: 480px) {
+    top: 10px;
+    right: 10px;
+  }
+`;
+
 const AdminLink = styled(Link)`
   padding: 8px 16px;
   background-color: #2e6f40;
@@ -35,17 +51,21 @@ const AdminLink = styled(Link)`
   border-radius: 8px;
   font-family: "Lato", sans-serif;
   transition: background-color 0.3s ease;
+  font-size: 14px;
+  display: block;
+  width: auto;
+  text-align: center;
+  white-space: nowrap;
+
+  @media (max-width: 480px) {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
 
   &:hover {
     background-color: #9daf89;
+    color: white;
   }
-`;
-
-const AdminLinkContainer = styled.div`
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 1000;
 `;
 
 const FloralPatternSection = styled.div`
@@ -123,7 +143,7 @@ function AppContent() {
         />
       )}
 
-      {isAuthenticated && isAdmin && (
+      {isAuthenticated && isAdmin && location.pathname !== '/admin' && (
         <AdminLinkContainer>
           <AdminLink to="/admin">Admin Dashboard</AdminLink>
         </AdminLinkContainer>

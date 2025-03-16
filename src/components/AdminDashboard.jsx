@@ -9,43 +9,90 @@ const DashboardContainer = styled.div`
   padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
+  
+  @media (max-width: 768px) {
+    padding: 15px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 10px;
+  }
 `;
 
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: flex-start; /* Align the button correctly */
+  align-items: flex-start;
   margin-bottom: 30px;
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+  }
 `;
 
 const TitleContainer = styled.div`
   flex-grow: 1;
   text-align: center;
+  width: 100%;
 `;
 
 const Title = styled.h1`
   font-family: "Playfair Display", serif;
   color: #2e6f40;
-  margin-top: 60px;
-  margin-bottom: -15px;
-  margin-left: 220px;
-  margin-right: 100px;
+  margin: 60px auto 15px;
+  text-align: center;
+  padding: 0 20px;
+  
+  @media (max-width: 768px) {
+    margin-top: 70px;
+    font-size: 28px;
+  }
+
+  @media (max-width: 480px) {
+    margin-top: 60px;
+    font-size: 24px;
+  }
+
+  @media (max-width: 350px) {
+    margin-top: 50px;
+  }
 `;
 
 const ButtonContainer = styled.div`
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
   margin-top: 30px;
+  width: 100%;
+
+  @media (max-width: 768px) {
+    margin-top: 20px;
+  }
+
+  button {
+    width: 140px;
+  }
 `;
 
 const HeartDivider = styled.img`
   display: block;
   margin: 20px auto;
-  padding-bottom: 20px;
-  padding-top: 0px;
-  width: 80%; /* Adjust size as needed */
-  max-width: 400px; /* Optional: To limit the maximum width */
+  padding: 0;
+  width: 80%;
+  max-width: 400px;
+
+  @media (max-width: 768px) {
+    width: 90%;
+    max-width: 300px;
+  }
+
+  @media (max-width: 480px) {
+    width: 95%;
+    max-width: 250px;
+  }
 `;
 
 const TabContainer = styled.div`
@@ -54,6 +101,12 @@ const TabContainer = styled.div`
   justify-content: center;
   align-items: center;
   margin-bottom: 20px;
+  flex-wrap: wrap;
+  padding: 0 10px;
+
+  @media (max-width: 480px) {
+    gap: 8px;
+  }
 `;
 
 const Tab = styled.button`
@@ -65,6 +118,16 @@ const Tab = styled.button`
   cursor: pointer;
   font-family: "Lato", sans-serif;
   transition: all 0.3s ease;
+  font-size: 14px;
+
+  @media (max-width: 768px) {
+    padding: 8px 16px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
 
   &:hover {
     background-color: ${(props) => (props.$active ? "#9daf89" : "#eee")};
@@ -75,22 +138,42 @@ const Card = styled.div`
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 4px #6666b3;
+  width: 90%;
   max-width: 600px;
   padding: 20px;
-  margin-top: 40px;
-  margin-bottom: 20px;
-  margin: 40px auto 20px; // This will horizontally center the card
+  margin: 40px auto 20px;
+
+  @media (max-width: 768px) {
+    width: 95%;
+    padding: 15px;
+    margin: 30px auto 15px;
+  }
+
+  @media (max-width: 480px) {
+    width: 100%;
+    padding: 12px;
+    margin: 20px auto 10px;
+  }
 `;
 
 const Form = styled.form`
   display: flex;
   flex-direction: column;
   gap: 15px;
+  width: 100%;
   max-width: 500px;
-  padding-left: 40px;
-  padding-right: 0px;
-  padding-top: 12px;
-  padding-bottom: 18px;
+  margin: 0 auto;
+  padding: 12px 20px 18px;
+
+  @media (max-width: 768px) {
+    padding: 10px 15px;
+    gap: 12px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 8px 10px;
+    gap: 10px;
+  }
 `;
 
 const Input = styled.input`
@@ -99,6 +182,12 @@ const Input = styled.input`
   border-radius: 8px;
   font-size: 16px;
   font-family: "Lato", sans-serif;
+  width: 100%;
+
+  @media (max-width: 480px) {
+    padding: 8px;
+    font-size: 14px;
+  }
 
   &:focus {
     outline: none;
@@ -115,6 +204,18 @@ const Button = styled.button`
   cursor: pointer;
   font-family: "Lato", sans-serif;
   transition: background-color 0.3s ease;
+  font-size: 14px;
+  min-width: 140px;
+  text-align: center;
+
+  @media (max-width: 768px) {
+    padding: 8px 16px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
 
   &:hover {
     background-color: #9daf89;
@@ -142,7 +243,21 @@ const StatsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 20px;
-  margin-bottom: 30px;
+  margin: 30px auto;
+  padding: 0 20px;
+  max-width: 800px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    padding: 0 15px;
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 0 10px;
+  }
 `;
 
 const StatCard = styled.div`
@@ -153,11 +268,25 @@ const StatCard = styled.div`
   box-shadow: 0 2px 4px #6666b3;
   text-align: center;
 
+  @media (max-width: 768px) {
+    padding: 15px;
+    margin-top: 15px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 12px;
+    margin-top: 10px;
+  }
+
   h3 {
     margin: 0;
     color: #2e6f40;
     font-size: 0.9em;
     text-transform: uppercase;
+
+    @media (max-width: 480px) {
+      font-size: 0.8em;
+    }
   }
 
   p {
@@ -165,6 +294,14 @@ const StatCard = styled.div`
     font-size: 2em;
     color: #2e6f40;
     font-weight: bold;
+
+    @media (max-width: 768px) {
+      font-size: 1.8em;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 1.6em;
+    }
   }
 `;
 
@@ -179,6 +316,25 @@ const BackLink = styled(Link)`
   border-radius: 8px;
   font-family: "Lato", sans-serif;
   transition: background-color 0.3s ease;
+  z-index: 1000;
+  font-size: 14px;
+  width: 140px;
+  text-align: center;
+  white-space: nowrap;
+
+  @media (max-width: 768px) {
+    padding: 6px 12px;
+    top: 15px;
+    left: 15px;
+  }
+
+  @media (max-width: 350px) {
+    padding: 6px 10px;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 13px;
+  }
 
   &:hover {
     background-color: #9daf89;
@@ -219,6 +375,18 @@ const LoadingSpinner = styled.div`
 const HeaderTitle = styled.h2`
   color: #2e6f40;
   text-align: center;
+  margin: 20px 0;
+  font-size: 24px;
+
+  @media (max-width: 768px) {
+    font-size: 22px;
+    margin: 15px 0;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 20px;
+    margin: 12px 0;
+  }
 `;
 
 const FlipSymbol = styled.span`
@@ -360,24 +528,12 @@ const AdminDashboard = () => {
   return (
     <DashboardContainer>
       <BackLink to="/">← Back to Guestbook</BackLink>
-
       <Header>
         <TitleContainer>
           <Title>Admin Dashboard</Title>
+          <HeartDivider src="/images/heart-divider.svg" alt="Heart Divider" />
         </TitleContainer>
-        <ButtonContainer>
-          <Button
-            onClick={handleExportData}
-            disabled={loading}
-            style={{ marginTop: "40px" }}
-          >
-            Export Data
-          </Button>
-        </ButtonContainer>
       </Header>
-
-      {/* Heart Divider Image */}
-      <HeartDivider src="/images/heart-divider.svg" alt="Heart Divider" />
 
       {loading && (
         <LoadingOverlay>
