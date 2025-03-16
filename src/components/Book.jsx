@@ -102,8 +102,16 @@ const BookContainer = styled.div`
       padding: 0 10px !important;
     }
 
-    @media (min-width: 412px) and (max-width: 768px) {
+    @media (min-width: 412px) and (max-width: 599px) {
       max-width: 392px !important;
+      margin: 0 auto !important;
+      padding: 0 !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+    }
+
+    @media (min-width: 600px) and (max-width: 768px) {
+      max-width: 550px !important;
       margin: 0 auto !important;
       padding: 0 !important;
       left: 50% !important;
@@ -124,7 +132,13 @@ const BookContainer = styled.div`
     height: calc(100vh - 40px);
   }
 
-  @media (min-width: 412px) and (max-width: 768px) {
+  @media (min-width: 412px) and (max-width: 599px) {
+    padding: 0;
+    height: calc(100vh - 40px);
+    justify-content: center;
+  }
+
+  @media (min-width: 600px) and (max-width: 768px) {
     padding: 0;
     height: calc(100vh - 40px);
     justify-content: center;
@@ -622,13 +636,31 @@ const Book = ({ onLogin }) => {
       )}
       <HTMLFlipBook
         ref={bookRef}
-        width={isMobile ? (window.innerWidth >= 412 ? 392 : window.innerWidth >= 375 ? 355 : 320) : 550}
-        height={isMobile ? (window.innerWidth >= 412 ? 750 : 500) : 733}
+        width={isMobile ? (
+          window.innerWidth >= 600 ? 550 :
+          window.innerWidth >= 412 ? 392 :
+          window.innerWidth >= 375 ? 355 :
+          320
+        ) : 550}
+        height={isMobile ? (
+          window.innerWidth >= 600 ? 733 :
+          window.innerWidth >= 412 ? 750 :
+          500
+        ) : 733}
         size="stretch"
         minWidth={280}
-        maxWidth={isMobile ? (window.innerWidth >= 412 ? 392 : window.innerWidth >= 375 ? 355 : 320) : 1100}
+        maxWidth={isMobile ? (
+          window.innerWidth >= 600 ? 550 :
+          window.innerWidth >= 412 ? 392 :
+          window.innerWidth >= 375 ? 355 :
+          320
+        ) : 1100}
         minHeight={400}
-        maxHeight={isMobile ? (window.innerWidth >= 412 ? 750 : 500) : window.innerHeight - 100}
+        maxHeight={isMobile ? (
+          window.innerWidth >= 600 ? 733 :
+          window.innerWidth >= 412 ? 750 :
+          500
+        ) : window.innerHeight - 100}
         maxShadowOpacity={0.5}
         showCover={true}
         mobileScrollSupport={isAuthenticated}
