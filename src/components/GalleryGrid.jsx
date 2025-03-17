@@ -75,9 +75,9 @@ const DownloadButton = styled.button`
   }
 `;
 
-const MessageContent = styled.div`
-  padding: 10px 0;
-`;
+// const MessageContent = styled.div`
+//   padding: 10px 0;
+// `;
 
 const GuestName = styled.h3`
   font-family: 'Playfair Display', serif;
@@ -86,13 +86,13 @@ const GuestName = styled.h3`
   font-size: 1.1em;
 `;
 
-const Message = styled.p`
-  font-family: 'Lato', sans-serif;
-  color: #34495e;
-  margin: 8px 0;
-  font-size: 0.9em;
-  line-height: 1.4;
-`;
+// const Message = styled.p`
+//   font-family: 'Lato', sans-serif;
+//   color: #34495e;
+//   margin: 8px 0;
+//   font-size: 0.9em;
+//   line-height: 1.4;
+// `;
 
 const Timestamp = styled.span`
   font-size: 0.8em;
@@ -246,11 +246,6 @@ const GalleryGrid = ({ refreshTrigger }) => {
               )}
             </ImageContainer>
           )}
-          <MessageContent>
-            <GuestName>{submission.name}</GuestName>
-            {submission.comment && (
-              <Message>{submission.comment}</Message>
-            )}
             <Timestamp>
               {new Date(submission.uploaded_at).toLocaleDateString('en-AU', {
                 day: 'numeric',
@@ -260,7 +255,6 @@ const GalleryGrid = ({ refreshTrigger }) => {
                 minute: '2-digit'
               })}
             </Timestamp>
-          </MessageContent>
         </Card>
       ))}
     </Grid>
