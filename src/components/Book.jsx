@@ -70,23 +70,78 @@ const PageContainer = styled.div.attrs(props => ({
 
 const BookContainer = styled.div`
   width: 100%;
-  height: 100vh;
+  height: calc(100vh - 60px);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 0;
+  padding: 20px;
   margin: 0;
   position: relative;
+  overflow: hidden;
 
   .demo-book {
     width: 100% !important;
     max-width: 320px !important;
-    margin: 0 auto !important;
+    margin: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    position: relative !important;
+
+    @media (max-width: 320px) {
+      padding: 0 !important;
+      margin: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      max-width: 100% !important;
+    }
+
+    @media (min-width: 375px) and (max-width: 411px) {
+      max-width: 355px !important;
+      margin: 0 auto !important;
+      padding: 0 10px !important;
+    }
+
+    @media (min-width: 412px) and (max-width: 599px) {
+      max-width: 392px !important;
+      margin: 0 auto !important;
+      padding: 0 !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+    }
+
+    @media (min-width: 600px) and (max-width: 768px) {
+      max-width: 550px !important;
+      margin: 0 auto !important;
+      padding: 0 !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+    }
 
     @media (min-width: 769px) {
-      max-width: 550px !important;
+      max-width: 1400px !important;
     }
+  }
+
+  @media (max-width: 320px) {
+    padding: 0;
+  }
+
+  @media (min-width: 375px) and (max-width: 411px) {
+    padding: 10px;
+    height: calc(100vh - 40px);
+  }
+
+  @media (min-width: 412px) and (max-width: 599px) {
+    padding: 0;
+    height: calc(100vh - 40px);
+    justify-content: center;
+  }
+
+  @media (min-width: 600px) and (max-width: 768px) {
+    padding: 0;
+    height: calc(100vh - 40px);
+    justify-content: center;
   }
 `;
 
@@ -372,6 +427,73 @@ const MessageIcon = styled.img`
   cursor: pointer;
 `;
 
+const MemoryPageContent = styled(PageContent)`
+  padding: 30px;
+  gap: 20px;
+
+  @media (max-width: 768px) {
+    padding: 20px;
+    gap: 15px;
+  }
+`;
+
+const MemoryImage = styled.img`
+  width: 100%;
+  max-height: 60%;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+`;
+
+const MemoryMessage = styled.p`
+  font-family: "Lato", sans-serif;
+  font-size: 1.1em;
+  line-height: 1.6;
+  color: #2c3e50;
+  text-align: center;
+  margin: 15px 0;
+  font-style: italic;
+`;
+
+const MemoryFooter = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  margin-top: auto;
+`;
+
+const GuestName = styled.span`
+  font-family: "Playfair Display", serif;
+  font-weight: 600;
+  color: #2e6f40;
+  font-size: 1.2em;
+`;
+
+const DateStamp = styled.span`
+  font-family: "Lato", sans-serif;
+  color: #95a5a6;
+  font-size: 0.9em;
+`;
+
+const MemoryPage = ({ image, message, guestName, date, pageNumber }) => {
+  return (
+    <div className="page">
+      <Page number={pageNumber}>
+        <MemoryPageContent $isAuthenticated={true}>
+          <PageTitle $isCover={false}>A Special Memory</PageTitle>
+          <MemoryImage src={image} alt={`Memory from ${guestName}`} />
+          <MemoryMessage>{message}</MemoryMessage>
+          <MemoryFooter>
+            <GuestName>{guestName}</GuestName>
+            <DateStamp>{new Date(date).toLocaleDateString()}</DateStamp>
+          </MemoryFooter>
+        </MemoryPageContent>
+      </Page>
+    </div>
+  );
+};
+
 const Page = ({ number, isCover, children }) => {
   return (
     <PageContainer $isCover={isCover}>
@@ -381,14 +503,81 @@ const Page = ({ number, isCover, children }) => {
   );
 };
 
+const BackCover = styled(PageContainer)`
+  background-color: #9daf89;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2rem;
+  color: white;
+  position: relative;
+
+  img {
+    width: 180px;
+    height: 180px;
+    margin-bottom: 3rem;
+    opacity: 0.85;
+    filter: brightness(1.1) saturate(0.9);
+    object-fit: contain;
+  }
+
+  p {
+    font-family: "Playfair Display", serif;
+    color: white;
+    font-size: 1.8em;
+    line-height: 1.6;
+    margin-top: 1.5rem;
+    letter-spacing: 0.05em;
+    font-weight: 300;
+  }
+
+  h2 {
+    font-family: "Playfair Display", serif;
+    color: white;
+    font-size: 3em;
+    margin-top: 1rem;
+    letter-spacing: 0.02em;
+    font-weight: 400;
+  }
+
+  @media (max-width: 768px) {
+    img {
+      width: 150px;
+      height: 150px;
+      margin-bottom: 2rem;
+    }
+
+    p {
+      font-size: 1.5em;
+    }
+
+    h2 {
+      font-size: 2.8em;
+    }
+  }
+`;
+
 const Book = ({ onLogin }) => {
   const [submissions, setSubmissions] = useState([]);
   const [refreshTrigger, setRefreshTrigger] = useState(false);
   const [showHint, setShowHint] = useState(true);
   const [page, setPage] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const bookRef = useRef(null);
   const isAuthenticated = authService.isAuthenticated();
+
+  // Add resize listener
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Immediately check auth status on mount
   useEffect(() => {
@@ -503,13 +692,31 @@ const Book = ({ onLogin }) => {
       )}
       <HTMLFlipBook
         ref={bookRef}
-        width={320}
-        height={500}
+        width={isMobile ? (
+          window.innerWidth >= 600 ? 550 :
+          window.innerWidth >= 412 ? 392 :
+          window.innerWidth >= 375 ? 355 :
+          320
+        ) : 550}
+        height={isMobile ? (
+          window.innerWidth >= 600 ? 733 :
+          window.innerWidth >= 412 ? 750 :
+          500
+        ) : 733}
         size="stretch"
         minWidth={280}
-        maxWidth={550}
+        maxWidth={isMobile ? (
+          window.innerWidth >= 600 ? 550 :
+          window.innerWidth >= 412 ? 392 :
+          window.innerWidth >= 375 ? 355 :
+          320
+        ) : 1100}
         minHeight={400}
-        maxHeight={600}
+        maxHeight={isMobile ? (
+          window.innerWidth >= 600 ? 733 :
+          window.innerWidth >= 412 ? 750 :
+          500
+        ) : window.innerHeight - 100}
         maxShadowOpacity={0.5}
         showCover={true}
         mobileScrollSupport={isAuthenticated}
@@ -519,7 +726,7 @@ const Book = ({ onLogin }) => {
         useMouseEvents={false}
         swipeDistance={0}
         clickEventForward={false}
-        usePortrait={true}
+        usePortrait={isMobile}
         startPage={0}
         onFlip={onFlip}
         drawShadow={true}
@@ -527,7 +734,7 @@ const Book = ({ onLogin }) => {
         key={isAuthenticated ? 'auth' : 'unauth'}
       >
         <div className="page">
-          <Page isCover={true} >
+          <Page isCover={true}>
             <CoverContent>
               <h1>Katie & Alex</h1>
               <p>Wedding Guest Book & Photo Album</p>
@@ -542,7 +749,7 @@ const Book = ({ onLogin }) => {
         </div>
 
         <div className="page">
-          <Page number="1" >
+          <Page number="1">
             <PageContent $isAuthenticated={isAuthenticated}>
               <GuestbookIcon
                 src="/images/guestbook-icon.svg"
@@ -556,7 +763,7 @@ const Book = ({ onLogin }) => {
         </div>
 
         <div className="page">
-          <Page number="2" >
+          <Page number="2">
             <PageContent $isAuthenticated={isAuthenticated}>
               <CameraIcon
                 src="/images/cameraheart-icon.svg"
@@ -570,7 +777,7 @@ const Book = ({ onLogin }) => {
         </div>
 
         <div className="page">
-          <Page number="3" >
+          <Page number="3">
             <PageContent $isAuthenticated={isAuthenticated}>
               <MessageIcon
                 src="/images/message-icon.svg"
@@ -579,7 +786,7 @@ const Book = ({ onLogin }) => {
               />
               <PageTitle $isCover={false}>Guest Messages</PageTitle>
               {messageSubmissions.length > 0 ? (
-                 <GalleryGrid refreshTrigger={refreshTrigger} />
+                <GalleryGrid refreshTrigger={refreshTrigger} />
               ) : (
                 <EmptyMessage>
                   No messages have been shared yet. Be the first!
@@ -590,16 +797,40 @@ const Book = ({ onLogin }) => {
         </div>
 
         <div className="page">
-          <Page number="">
+          <Page number="4">
             <PageContent $isAuthenticated={isAuthenticated}>
               <ThankfulIcon
                 src="/images/thankful-icon.svg"
                 alt="Thankful Icon"
               />
-              <PageTitle $isCover={false}>Thank You</PageTitle>
-              <p>For being part of our special day.</p>
+              <PageTitle $isCover={false}>Snappily Ever After</PageTitle>
+              <p style={{ textAlign: 'center', margin: '1rem 0' }}>And just like that, our adventure begins!</p>
+              <p style={{ textAlign: 'center', margin: '1rem 0' }}>
+                Thank you for making our day unforgettable – for the laughter, the love, and the questionable dance moves!
+              </p>
+              <p style={{ textAlign: 'center', margin: '1rem 0' }}>
+                This book is filled with all the memories you helped create.
+              </p>
+              <p style={{ textAlign: 'center', margin: '2rem 0', fontStyle: 'italic' }}>
+                Here's to many more chapters together!
+              </p>
             </PageContent>
           </Page>
+        </div>
+
+        <div className="page">
+          <BackCover>
+            <img 
+              src="/images/cat_wedding.png" 
+              alt="Wedding cats" 
+              style={{ 
+                transform: 'scale(1.1)',
+                filter: 'brightness(1.1) saturate(0.9) opacity(0.85)'
+              }} 
+            />
+            <p>With love</p>
+            <h2>Katie & Alex</h2>
+          </BackCover>
         </div>
       </HTMLFlipBook>
       {isAuthenticated && (
