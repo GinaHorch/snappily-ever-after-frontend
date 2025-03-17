@@ -134,36 +134,42 @@ const ErrorMessage = styled.div`
 `;
 
 const GalleryGrid = ({ refreshTrigger }) => {
-  console.log("GalleryGrid received refreshTrigger:", refreshTrigger); // ✅ Debugging step
+  console.log("GalleryGrid received refreshTrigger:", refreshTrigger);
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const isAdmin = authService.isAdmin();
+  const isAuthenticated = authService.isAuthenticated();
 
   useEffect(() => {
-    console.log("useEffect triggered on mount"); // ✅ Debugging
-    fetchSubmissions();
-  }, []); // ✅ Runs on mount
-  
-  useEffect(() => {
-    if (refreshTrigger) {
-      console.log("Refresh Trigger Activated! Fetching submissions again..."); // ✅ Debugging
+    if (isAuthenticated) {
+      console.log("useEffect triggered on mount");
       fetchSubmissions();
     }
-  }, [refreshTrigger]); // ✅ Runs when a new image is uploaded
+  }, [isAuthenticated]);
+  
+  useEffect(() => {
+    if (refreshTrigger && isAuthenticated) {
+      console.log("Refresh Trigger Activated! Fetching submissions again...");
+      fetchSubmissions();
+    }
+  }, [refreshTrigger, isAuthenticated]);
 
   const fetchSubmissions = async () => {
-    console.log("fetchSubmissions() called");  // ✅ Check if function runs
+    if (!isAuthenticated) {
+      return;
+    }
+
+    console.log("fetchSubmissions() called");
     try {
       setLoading(true);
       const data = await galleryService.getAllImages();
-      console.log("Fetched data from API:", data); // ✅ Check API response
+      console.log("Fetched data from API:", data);
       setSubmissions(data);
       setError(null);
     } catch (err) {
-      setError('Failed to load images. Please try again later.');
       console.error('Error fetching submissions:', err);
-      setError("Failed to load Images. Please try again later.")
+      setError("Failed to load images. Please try again later.");
     } finally {
       setLoading(false);
     }

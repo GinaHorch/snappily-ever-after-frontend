@@ -129,6 +129,8 @@ const Form = styled.form`
   display: flex;
   flex-direction: column;
   gap: 15px;
+  position: relative;
+  z-index: 1000;
   
   @media (max-width: 768px) {
     scroll-behavior: smooth;
@@ -158,6 +160,10 @@ const Form = styled.form`
     }
   }
 
+  * {
+    pointer-events: auto !important;
+  }
+
   @media (max-width: 450px) {
     gap: 10px;
     padding-bottom: 55px;
@@ -175,6 +181,8 @@ const Input = styled.input`
   border-radius: 8px;
   font-size: 16px;
   font-family: "Lato", sans-serif;
+  position: relative;
+  z-index: 1000;
 
   &:focus {
     outline: none;

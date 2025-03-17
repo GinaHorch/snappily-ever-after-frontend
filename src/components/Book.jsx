@@ -21,7 +21,7 @@ const BookContainer = styled.div`
   margin: 0;
   position: relative;
   overflow: hidden;
-  opacity: ${props => props.$isLoading ? 0 : 1};
+  opacity: ${props => (props.$isLoading && props.$isAuthenticated) ? 0 : 1};
   transition: opacity 0.3s ease-in;
 
   .page {
@@ -37,9 +37,9 @@ const BookContainer = styled.div`
     left: 0 !important;
     right: 0 !important;
     position: relative !important;
-    opacity: ${props => props.$isLoading ? 0 : 1};
+    opacity: ${props => (props.$isLoading && props.$isAuthenticated) ? 0 : 1};
     transition: opacity 0.3s ease-in;
-    visibility: ${props => props.$isLoading ? 'hidden' : 'visible'};
+    visibility: ${props => (props.$isLoading && props.$isAuthenticated) ? 'hidden' : 'visible'};
 
     @media (max-width: 320px) {
       padding: 0 !important;
@@ -105,7 +105,7 @@ const CoverContent = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: ${props => props.$isAuthenticated ? 'flex-start' : 'center'};
   position: relative;
   padding: 10px;
   overflow-y: auto;
@@ -123,31 +123,25 @@ const CoverContent = styled.div`
     color: white;
     font: "Parisienne";
     font-weight: bold;
-    font-size: 60px;
+    font-size: ${props => props.$isAuthenticated ? '60px' : '45px'};
     margin-bottom: 0px;
     padding: 0 10px;
-    margin-top: 10px;
+    margin-top: ${props => props.$isAuthenticated ? '10px' : '0'};
 
     @media (max-width: 560px) {
-      font-size: 50px;
-      margin-top: 5px;
+      font-size: ${props => props.$isAuthenticated ? '50px' : '40px'};
     }
 
     @media (max-width: 500px) {
-      font-size: 45px;
-      padding: 0 15px;
-      margin-top: 0;
+      font-size: ${props => props.$isAuthenticated ? '45px' : '35px'};
     }
 
     @media (max-width: 400px) {
-      font-size: 40px;
-      padding: 0 10px;
-      margin-top: 0;
+      font-size: ${props => props.$isAuthenticated ? '40px' : '30px'};
     }
 
     @media (max-width: 320px) {
-      font-size: 35px;
-      margin-top: 0;
+      font-size: ${props => props.$isAuthenticated ? '35px' : '25px'};
     }
   }
 
@@ -208,16 +202,16 @@ const CoverContent = styled.div`
     z-index: 1000;
     width: 100%;
     max-width: 300px;
-    background: #9daf89;
+    background: rgba(157, 175, 137, 0.95);
     padding: 20px;
     border-radius: 8px;
-    margin-top: auto;
-    margin-bottom: 20px;
+    margin: 20px auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 
     @media (max-width: 400px) {
       max-width: 260px;
       padding: 15px;
-      margin-top: 10px;
+      margin: 15px auto;
     }
 
     @media (max-width: 320px) {
@@ -585,6 +579,18 @@ const Book = ({ onLogin }) => {
   // Replace the initialization effect with a dimensions calculation effect
   useEffect(() => {
     const calculateDimensions = () => {
+      // For unauthenticated state, use smaller dimensions for login form
+      if (!isAuthenticated) {
+        setDimensions({
+          width: Math.min(320, window.innerWidth - 40),
+          height: Math.min(500, window.innerHeight - 100)
+        });
+        setIsInitialized(true);
+        setLoading(false);
+        return;
+      }
+
+      // For authenticated state, use full book dimensions
       const width = isMobile ? (
         window.innerWidth >= 600 ? 550 :
         window.innerWidth >= 412 ? 392 :
@@ -603,10 +609,8 @@ const Book = ({ onLogin }) => {
       setLoading(false);
     };
 
-    // Small delay to ensure proper calculation
-    const timer = setTimeout(calculateDimensions, 100);
-    return () => clearTimeout(timer);
-  }, [isMobile]);
+    calculateDimensions();
+  }, [isMobile, isAuthenticated]);
 
   // Add resize listener
   useEffect(() => {
@@ -661,11 +665,17 @@ const Book = ({ onLogin }) => {
   };
 
   useEffect(() => {
+  if (isAuthenticated) {
     console.log("Fetching submissions via useEffect...");
     fetchSubmissions();
-  }, [refreshTrigger]);
+  }
+}, [refreshTrigger, isAuthenticated]); // Add isAuthenticated to dependencies
   
   const fetchSubmissions = async () => {
+  if (!isAuthenticated) {
+    return; // Don't attempt to fetch if not authenticated
+  }
+
     try {
       setLoading(true);
       const data = await galleryService.getAllImages();  // Fetch from backend
@@ -736,7 +746,7 @@ const Book = ({ onLogin }) => {
   };
 
   return (
-    <BookContainer $isLoading={!isInitialized}>
+    <BookContainer $isLoading={!isInitialized} $isAuthenticated={isAuthenticated}>
       {showConfetti && (
         <Confetti
           width={window.innerWidth}
@@ -752,14 +762,16 @@ const Book = ({ onLogin }) => {
         height={dimensions.height}
         size="stretch"
         minWidth={280}
-        maxWidth={isMobile ? (
-          window.innerWidth >= 600 ? 550 :
-          window.innerWidth >= 412 ? 392 :
-          window.innerWidth >= 375 ? 355 :
-          320
-        ) : 1100}
-        minHeight={600}
-        maxHeight={window.innerHeight - 80}
+        maxWidth={isAuthenticated ? (
+          isMobile ? (
+            window.innerWidth >= 600 ? 550 :
+            window.innerWidth >= 412 ? 392 :
+            window.innerWidth >= 375 ? 355 :
+            320
+          ) : 1100
+        ) : 320}
+        minHeight={isAuthenticated ? 600 : 500}
+        maxHeight={isAuthenticated ? window.innerHeight - 80 : 500}
         maxShadowOpacity={0.5}
         showCover={true}
         mobileScrollSupport={isAuthenticated}
@@ -768,7 +780,7 @@ const Book = ({ onLogin }) => {
         flippingTime={1000}
         useMouseEvents={true}
         swipeDistance={30}
-        clickEventForward={true}
+        clickEventForward={false}
         usePortrait={isMobile}
         startPage={0}
         onFlip={onFlip}
@@ -780,15 +792,15 @@ const Book = ({ onLogin }) => {
         useMediaEvents={true}
         startZIndex={0}
         style={{
-          opacity: isInitialized ? 1 : 0,
+          opacity: 1,
           transition: 'opacity 0.3s ease-in',
-          visibility: isInitialized ? 'visible' : 'hidden'
+          visibility: 'visible'
         }}
       >
         {/* Cover Page */}
         <div className="page">
           <Page isCover={true}>
-            <CoverContent>
+            <CoverContent $isAuthenticated={isAuthenticated}>
               <h1>Katie & Alex</h1>
               <p>Wedding Guest Book & Photo Album</p>
               <img src="/images/cat_wedding.png" alt="Wedding image" />
