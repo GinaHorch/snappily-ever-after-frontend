@@ -6,71 +6,13 @@ import LoginForm from "./LoginForm";
 import PhotoUpload from "./PhotoUpload";
 import GalleryGrid from "./GalleryGrid";
 import { authService } from "../services/auth";
+import { galleryService } from "../services/gallery";
 import { Link } from "react-router-dom";
-
-const PageContainer = styled.div.attrs(props => ({
-  'data-is-cover': props.$isCover
-}))`
-  background-color: ${(props) => (props.$isCover ? "#9daf89" : "#FAF9F6")};
-  border: 1px solid #c2c2c2;
-  border-radius: ${(props) =>
-    props.$isCover ? "0 10px 10px 0" : "0"}; /* Only rounded corners on cover */
-  box-shadow: inset -7px 0 30px -7px rgba(0, 0, 0, 0.4);
-  height: 100%;
-  width: 100%;
-  padding: 0.3cm;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  position: relative;
-  overflow: hidden;
-
-  @media (min-width: 769px) {
-    padding: 0.5cm;
-  }
-
-  &::before {
-    content: "";
-    position: absolute;
-    top: 0.3cm;
-    left: 0.3cm;
-    right: 0.3cm;
-    bottom: 0.3cm;
-    border: 2px solid ${(props) => (props.$isCover ? "white" : "#2e6f40")};
-    border-radius: 20px;
-    pointer-events: none;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
-
-    @media (max-width: 768px) {
-      top: 0.3cm;
-      left: 0.3cm;
-      right: 0.3cm;
-      bottom: 0.3cm;
-    }
-  }
-
-  /* Book spine effect, only on cover */
-  ${(props) =>
-    props.$isCover &&
-    `&::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: -15px;
-      width: 20px;
-      height: 100%;
-      background: #6e7e4e;
-      border-radius: 5px;
-      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
-    }`}
-  box-shadow: inset -7px 0 30px -7px rgba(0, 0, 0, 0.4),
-    3px 0 10px rgba(0, 0, 0, 0.2);
-`;
 
 const BookContainer = styled.div`
   width: 100%;
   height: calc(100vh - 60px);
+  min-height: 600px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -79,6 +21,14 @@ const BookContainer = styled.div`
   margin: 0;
   position: relative;
   overflow: hidden;
+  opacity: ${props => props.$isLoading ? 0 : 1};
+  transition: opacity 0.3s ease-in;
+
+  .page {
+    display: flex;
+    width: 100%;
+    height: 100%;
+  }
 
   .demo-book {
     width: 100% !important;
@@ -87,6 +37,9 @@ const BookContainer = styled.div`
     left: 0 !important;
     right: 0 !important;
     position: relative !important;
+    opacity: ${props => props.$isLoading ? 0 : 1};
+    transition: opacity 0.3s ease-in;
+    visibility: ${props => props.$isLoading ? 'hidden' : 'visible'};
 
     @media (max-width: 320px) {
       padding: 0 !important;
@@ -287,15 +240,6 @@ const PageContent = styled.div`
   overflow-y: auto;
 `;
 
-const PageTitle = styled.h2`
-  margin-bottom: 20px;
-  font-family: "Playfair Display", serif;
-  color: ${(props) =>
-    props.$isCover
-      ? "#2c3e50"
-      : "#2e6f40"}; /* Use #2e6f40 for non-cover pages */
-`;
-
 const EmptyMessage = styled.p`
   text-align: center;
   color: #95a5a6;
@@ -427,72 +371,67 @@ const MessageIcon = styled.img`
   cursor: pointer;
 `;
 
-const MemoryPageContent = styled(PageContent)`
-  padding: 30px;
-  gap: 20px;
-
-  @media (max-width: 768px) {
-    padding: 20px;
-    gap: 15px;
-  }
-`;
-
-const MemoryImage = styled.img`
+const PageContainer = styled.div.attrs(props => ({
+  'data-is-cover': props.$isCover
+}))`
+  background-color: ${(props) => (props.$isCover ? "#9daf89" : "#FAF9F6")};
+  border: 1px solid #c2c2c2;
+  border-radius: ${(props) =>
+    props.$isCover ? "0 10px 10px 0" : "0"}; /* Only rounded corners on cover */
+  box-shadow: inset -7px 0 30px -7px rgba(0, 0, 0, 0.4);
+  height: 100%;
   width: 100%;
-  max-height: 60%;
-  object-fit: contain;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-`;
-
-const MemoryMessage = styled.p`
-  font-family: "Lato", sans-serif;
-  font-size: 1.1em;
-  line-height: 1.6;
-  color: #2c3e50;
-  text-align: center;
-  margin: 15px 0;
-  font-style: italic;
-`;
-
-const MemoryFooter = styled.div`
+  padding: 0.3cm;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
-  margin-top: auto;
+  justify-content: flex-start;
+  position: relative;
+  overflow: hidden;
+
+  @media (min-width: 600px) {
+    padding: 0.5cm;
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0.3cm;
+    left: 0.3cm;
+    right: 0.3cm;
+    bottom: 0.3cm;
+    border: 2px solid ${(props) => (props.$isCover ? "white" : "#2e6f40")};
+    border-radius: 20px;
+    pointer-events: none;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+  }
+
+  /* Book spine effect, only on cover */
+  ${(props) =>
+    props.$isCover &&
+    `&::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -15px;
+      width: 20px;
+      height: 100%;
+      background: #6e7e4e;
+      border-radius: 5px;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
+    }`}
+  box-shadow: inset -7px 0 30px -7px rgba(0, 0, 0, 0.4),
+    3px 0 10px rgba(0, 0, 0, 0.2);
 `;
 
-const GuestName = styled.span`
+const PageTitle = styled.h2`
+  margin-bottom: 20px;
   font-family: "Playfair Display", serif;
-  font-weight: 600;
-  color: #2e6f40;
-  font-size: 1.2em;
+  color: ${(props) =>
+    props.$isCover
+      ? "#2c3e50"
+      : "#2e6f40"}; /* Use #2e6f40 for non-cover pages */
 `;
-
-const DateStamp = styled.span`
-  font-family: "Lato", sans-serif;
-  color: #95a5a6;
-  font-size: 0.9em;
-`;
-
-const MemoryPage = ({ image, message, guestName, date, pageNumber }) => {
-  return (
-    <div className="page">
-      <Page number={pageNumber}>
-        <MemoryPageContent $isAuthenticated={true}>
-          <PageTitle $isCover={false}>A Special Memory</PageTitle>
-          <MemoryImage src={image} alt={`Memory from ${guestName}`} />
-          <MemoryMessage>{message}</MemoryMessage>
-          <MemoryFooter>
-            <GuestName>{guestName}</GuestName>
-            <DateStamp>{new Date(date).toLocaleDateString()}</DateStamp>
-          </MemoryFooter>
-        </MemoryPageContent>
-      </Page>
-    </div>
-  );
-};
 
 const Page = ({ number, isCover, children }) => {
   return (
@@ -501,7 +440,7 @@ const Page = ({ number, isCover, children }) => {
       {number && <PageNumber>{number}</PageNumber>}
     </PageContainer>
   );
-};
+}; 
 
 const BackCover = styled(PageContainer)`
   background-color: #9daf89;
@@ -542,7 +481,7 @@ const BackCover = styled(PageContainer)`
     font-weight: 400;
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 600px) {
     img {
       width: 150px;
       height: 150px;
@@ -559,20 +498,120 @@ const BackCover = styled(PageContainer)`
   }
 `;
 
+const MemoryPageContent = styled.div`
+    opacity: ${(props) => (props.$isAuthenticated ? 1 : 0)};
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 20px;
+    overflow-y: auto;
+
+    @media (max-width: 600px) {
+        padding: 20px;
+        gap: 15px;
+    }
+`;
+
+const MemoryImage = styled.img`
+  width: 100%;
+  max-height: 60%;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+`;
+
+const MemoryMessage = styled.p`
+  font-family: "Playfair Display", serif;
+  font-size: 1.1em;
+  line-height: 1.6;
+  color: #2c3e50;
+  text-align: center;
+  margin: 15px 0;
+  font-style: italic;
+`;
+
+const MemoryFooter = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  margin-top: auto;
+`;
+
+const GuestName = styled.span`
+  font-family: "Playfair Display", serif;
+  font-weight: 600;
+  color: #2e6f40;
+  font-size: 1.2em;
+`;
+
+const DateStamp = styled.span`
+  font-family: "Playfair Display", serif;
+  color: #95a5a6;
+  font-size: 0.9em;
+`;
+
 const Book = ({ onLogin }) => {
   const [submissions, setSubmissions] = useState([]);
   const [refreshTrigger, setRefreshTrigger] = useState(false);
   const [showHint, setShowHint] = useState(true);
   const [page, setPage] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 600);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [dimensions, setDimensions] = useState({
+    width: 320,
+    height: 600
+  });
   const bookRef = useRef(null);
   const isAuthenticated = authService.isAuthenticated();
+
+  // Add a constant for fixed pages (excluding dynamic submission pages)
+  const FIXED_PAGES = {
+    FRONT_COVER: 0,
+    SHARE_MEMORY: 1,
+    GALLERY_GRID: 2,
+    FINAL_MESSAGE: 3,
+    BACK_COVER: 4
+  };
+
+  const totalPages = submissions.length + Object.keys(FIXED_PAGES).length;
+
+  // Replace the initialization effect with a dimensions calculation effect
+  useEffect(() => {
+    const calculateDimensions = () => {
+      const width = isMobile ? (
+        window.innerWidth >= 600 ? 550 :
+        window.innerWidth >= 412 ? 392 :
+        window.innerWidth >= 375 ? 355 :
+        320
+      ) : 550;
+
+      const height = isMobile ? (
+        window.innerWidth >= 600 ? Math.min(800, window.innerHeight - 100) :
+        window.innerWidth >= 412 ? Math.min(750, window.innerHeight - 80) :
+        Math.min(600, window.innerHeight - 60)
+      ) : Math.min(900, window.innerHeight - 100);
+
+      setDimensions({ width, height });
+      setIsInitialized(true);
+      setLoading(false);
+    };
+
+    // Small delay to ensure proper calculation
+    const timer = setTimeout(calculateDimensions, 100);
+    return () => clearTimeout(timer);
+  }, [isMobile]);
 
   // Add resize listener
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
+      setIsMobile(window.innerWidth <= 600);
     };
 
     window.addEventListener('resize', handleResize);
@@ -604,7 +643,7 @@ const Book = ({ onLogin }) => {
         setRefreshTrigger(prev => !prev);
         
         // Force a re-render after a brief delay on mobile
-        if (window.innerWidth <= 768) {
+        if (window.innerWidth <= 600) {
           setTimeout(() => {
             setRefreshTrigger(prev => !prev);
           }, 100);
@@ -620,6 +659,26 @@ const Book = ({ onLogin }) => {
     console.log("New image received:", newImage); // ✅ Debugging step
     setRefreshTrigger((prev) => !prev); // ✅ Trigger gallery refresh
   };
+
+  useEffect(() => {
+    console.log("Fetching submissions via useEffect...");
+    fetchSubmissions();
+  }, [refreshTrigger]);
+  
+  const fetchSubmissions = async () => {
+    try {
+      setLoading(true);
+      const data = await galleryService.getAllImages();  // Fetch from backend
+      console.log("Fetched submissions Book.jsx:", data);
+      setSubmissions(data);  // Store the images/messages
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching submissions:", err);
+      setError("Failed to load images. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };  
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -676,11 +735,8 @@ const Book = ({ onLogin }) => {
     setPage(e.data);
   };
 
-  const photoSubmissions = submissions.filter((sub) => sub.image);
-  const messageSubmissions = submissions.filter((sub) => sub.comment);
-
   return (
-    <BookContainer>
+    <BookContainer $isLoading={!isInitialized}>
       {showConfetti && (
         <Confetti
           width={window.innerWidth}
@@ -692,17 +748,8 @@ const Book = ({ onLogin }) => {
       )}
       <HTMLFlipBook
         ref={bookRef}
-        width={isMobile ? (
-          window.innerWidth >= 600 ? 550 :
-          window.innerWidth >= 412 ? 392 :
-          window.innerWidth >= 375 ? 355 :
-          320
-        ) : 550}
-        height={isMobile ? (
-          window.innerWidth >= 600 ? 733 :
-          window.innerWidth >= 412 ? 750 :
-          500
-        ) : 733}
+        width={dimensions.width}
+        height={dimensions.height}
         size="stretch"
         minWidth={280}
         maxWidth={isMobile ? (
@@ -711,28 +758,34 @@ const Book = ({ onLogin }) => {
           window.innerWidth >= 375 ? 355 :
           320
         ) : 1100}
-        minHeight={400}
-        maxHeight={isMobile ? (
-          window.innerWidth >= 600 ? 733 :
-          window.innerWidth >= 412 ? 750 :
-          500
-        ) : window.innerHeight - 100}
+        minHeight={600}
+        maxHeight={window.innerHeight - 80}
         maxShadowOpacity={0.5}
         showCover={true}
         mobileScrollSupport={isAuthenticated}
         className="demo-book"
         disabled={!isAuthenticated}
         flippingTime={1000}
-        useMouseEvents={false}
-        swipeDistance={0}
-        clickEventForward={false}
+        useMouseEvents={true}
+        swipeDistance={30}
+        clickEventForward={true}
         usePortrait={isMobile}
         startPage={0}
         onFlip={onFlip}
         drawShadow={true}
-        autoSize={true}
+        autoSize={false}
         key={isAuthenticated ? 'auth' : 'unauth'}
+        renderOnlyPageLengthChange={true}
+        showPageCorners={true}
+        useMediaEvents={true}
+        startZIndex={0}
+        style={{
+          opacity: isInitialized ? 1 : 0,
+          transition: 'opacity 0.3s ease-in',
+          visibility: isInitialized ? 'visible' : 'hidden'
+        }}
       >
+        {/* Cover Page */}
         <div className="page">
           <Page isCover={true}>
             <CoverContent>
@@ -748,6 +801,7 @@ const Book = ({ onLogin }) => {
           </Page>
         </div>
 
+        {/* Share Your Memory Form */}
         <div className="page">
           <Page number="1">
             <PageContent $isAuthenticated={isAuthenticated}>
@@ -762,42 +816,41 @@ const Book = ({ onLogin }) => {
           </Page>
         </div>
 
+        {/* 📌 Dynamically Insert One Page per Image/Message */}
+        {submissions.map((submission, index) => (
+          <div className="page" key={submission.id}>
+          <Page number={index + 2}>
+            <MemoryPageContent $isAuthenticated={isAuthenticated}>
+              <PageTitle $isCover={false}>A Snap in Time</PageTitle>
+              <MemoryImage src={submission.image} alt={`Memory from ${submission.name}`} />
+              <MemoryMessage>{submission.comment || "Captured a beautiful moment!"}</MemoryMessage>
+              <MemoryFooter>
+                <GuestName>{submission.name}</GuestName>
+                <DateStamp>{new Date(submission.uploaded_at).toLocaleDateString()}</DateStamp>
+              </MemoryFooter>
+            </MemoryPageContent>
+          </Page>
+        </div>
+      ))}
+
+        {/* 📸 Gallery Grid Page */}
         <div className="page">
-          <Page number="2">
+          <Page number={submissions.length + 1}>
             <PageContent $isAuthenticated={isAuthenticated}>
               <CameraIcon
                 src="/images/cameraheart-icon.svg"
                 alt="Camera Icon"
                 onClick={() => console.log("Camera Icon Clicked")}
               />
-              <PageTitle $isCover={false}>Photo Gallery</PageTitle>
+              <PageTitle $isCover={false}>Snappily Collected Moments</PageTitle>
               <GalleryGrid refreshTrigger={refreshTrigger} />
             </PageContent>
           </Page>
         </div>
 
+        {/* Snappily Ever After (Final Page) */}
         <div className="page">
-          <Page number="3">
-            <PageContent $isAuthenticated={isAuthenticated}>
-              <MessageIcon
-                src="/images/message-icon.svg"
-                alt="Message Icon"
-                onClick={() => console.log("Message Icon Clicked")}
-              />
-              <PageTitle $isCover={false}>Guest Messages</PageTitle>
-              {messageSubmissions.length > 0 ? (
-                <GalleryGrid refreshTrigger={refreshTrigger} />
-              ) : (
-                <EmptyMessage>
-                  No messages have been shared yet. Be the first!
-                </EmptyMessage>
-              )}
-            </PageContent>
-          </Page>
-        </div>
-
-        <div className="page">
-          <Page number="4">
+          <Page number={submissions.length + 2}>
             <PageContent $isAuthenticated={isAuthenticated}>
               <ThankfulIcon
                 src="/images/thankful-icon.svg"
@@ -818,6 +871,7 @@ const Book = ({ onLogin }) => {
           </Page>
         </div>
 
+        {/* Back Cover */}
         <div className="page">
           <BackCover>
             <img 
@@ -833,6 +887,7 @@ const Book = ({ onLogin }) => {
           </BackCover>
         </div>
       </HTMLFlipBook>
+            
       {isAuthenticated && (
         <NavigationButtons>
           <NavButton 
@@ -844,7 +899,7 @@ const Book = ({ onLogin }) => {
           </NavButton>
           <NavButton 
             onClick={nextPage} 
-            disabled={page === 4}
+            disabled={page === totalPages - 1}
             data-direction="next"
           >
             <span>Next Page →</span>
