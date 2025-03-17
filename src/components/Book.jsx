@@ -503,6 +503,62 @@ const Page = ({ number, isCover, children }) => {
   );
 };
 
+const BackCover = styled(PageContainer)`
+  background-color: #9daf89;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2rem;
+  color: white;
+  position: relative;
+
+  img {
+    width: 180px;
+    height: 180px;
+    margin-bottom: 3rem;
+    opacity: 0.85;
+    filter: brightness(1.1) saturate(0.9);
+    object-fit: contain;
+  }
+
+  p {
+    font-family: "Playfair Display", serif;
+    color: white;
+    font-size: 1.8em;
+    line-height: 1.6;
+    margin-top: 1.5rem;
+    letter-spacing: 0.05em;
+    font-weight: 300;
+  }
+
+  h2 {
+    font-family: "Playfair Display", serif;
+    color: white;
+    font-size: 3em;
+    margin-top: 1rem;
+    letter-spacing: 0.02em;
+    font-weight: 400;
+  }
+
+  @media (max-width: 768px) {
+    img {
+      width: 150px;
+      height: 150px;
+      margin-bottom: 2rem;
+    }
+
+    p {
+      font-size: 1.5em;
+    }
+
+    h2 {
+      font-size: 2.8em;
+    }
+  }
+`;
+
 const Book = ({ onLogin }) => {
   const [submissions, setSubmissions] = useState([]);
   const [refreshTrigger, setRefreshTrigger] = useState(false);
@@ -678,7 +734,7 @@ const Book = ({ onLogin }) => {
         key={isAuthenticated ? 'auth' : 'unauth'}
       >
         <div className="page">
-          <Page isCover={true} >
+          <Page isCover={true}>
             <CoverContent>
               <h1>Katie & Alex</h1>
               <p>Wedding Guest Book & Photo Album</p>
@@ -693,7 +749,7 @@ const Book = ({ onLogin }) => {
         </div>
 
         <div className="page">
-          <Page number="1" >
+          <Page number="1">
             <PageContent $isAuthenticated={isAuthenticated}>
               <GuestbookIcon
                 src="/images/guestbook-icon.svg"
@@ -707,7 +763,7 @@ const Book = ({ onLogin }) => {
         </div>
 
         <div className="page">
-          <Page number="2" >
+          <Page number="2">
             <PageContent $isAuthenticated={isAuthenticated}>
               <CameraIcon
                 src="/images/cameraheart-icon.svg"
@@ -721,7 +777,7 @@ const Book = ({ onLogin }) => {
         </div>
 
         <div className="page">
-          <Page number="3" >
+          <Page number="3">
             <PageContent $isAuthenticated={isAuthenticated}>
               <MessageIcon
                 src="/images/message-icon.svg"
@@ -730,7 +786,7 @@ const Book = ({ onLogin }) => {
               />
               <PageTitle $isCover={false}>Guest Messages</PageTitle>
               {messageSubmissions.length > 0 ? (
-                 <GalleryGrid refreshTrigger={refreshTrigger} />
+                <GalleryGrid refreshTrigger={refreshTrigger} />
               ) : (
                 <EmptyMessage>
                   No messages have been shared yet. Be the first!
@@ -741,17 +797,40 @@ const Book = ({ onLogin }) => {
         </div>
 
         <div className="page">
-          <Page number="">
+          <Page number="4">
             <PageContent $isAuthenticated={isAuthenticated}>
               <ThankfulIcon
                 src="/images/thankful-icon.svg"
                 alt="Thankful Icon"
               />
-              <PageTitle $isCover={false}>✨ Snappily Ever After! ✨</PageTitle>
-              <p>And just like that, our adventure begins! Thank you for making our day unforgettable – for the laughter, the love, the questionable dance moves, and of course, the snaps! 
-                This book is filled with all the memories you helped create! 💖 With love, Katie & Alex</p>
+              <PageTitle $isCover={false}>Snappily Ever After</PageTitle>
+              <p style={{ textAlign: 'center', margin: '1rem 0' }}>And just like that, our adventure begins!</p>
+              <p style={{ textAlign: 'center', margin: '1rem 0' }}>
+                Thank you for making our day unforgettable – for the laughter, the love, and the questionable dance moves!
+              </p>
+              <p style={{ textAlign: 'center', margin: '1rem 0' }}>
+                This book is filled with all the memories you helped create.
+              </p>
+              <p style={{ textAlign: 'center', margin: '2rem 0', fontStyle: 'italic' }}>
+                Here's to many more chapters together!
+              </p>
             </PageContent>
           </Page>
+        </div>
+
+        <div className="page">
+          <BackCover>
+            <img 
+              src="/images/cat_wedding.png" 
+              alt="Wedding cats" 
+              style={{ 
+                transform: 'scale(1.1)',
+                filter: 'brightness(1.1) saturate(0.9) opacity(0.85)'
+              }} 
+            />
+            <p>With love</p>
+            <h2>Katie & Alex</h2>
+          </BackCover>
         </div>
       </HTMLFlipBook>
       {isAuthenticated && (
