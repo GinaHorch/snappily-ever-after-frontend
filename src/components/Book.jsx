@@ -6,67 +6,8 @@ import LoginForm from "./LoginForm";
 import PhotoUpload from "./PhotoUpload";
 import GalleryGrid from "./GalleryGrid";
 import { authService } from "../services/auth";
+import { galleryService } from "../services/gallery";
 import { Link } from "react-router-dom";
-
-const PageContainer = styled.div.attrs(props => ({
-  'data-is-cover': props.$isCover
-}))`
-  background-color: ${(props) => (props.$isCover ? "#9daf89" : "#FAF9F6")};
-  border: 1px solid #c2c2c2;
-  border-radius: ${(props) =>
-    props.$isCover ? "0 10px 10px 0" : "0"}; /* Only rounded corners on cover */
-  box-shadow: inset -7px 0 30px -7px rgba(0, 0, 0, 0.4);
-  height: 100%;
-  width: 100%;
-  padding: 0.3cm;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  position: relative;
-  overflow: hidden;
-
-  @media (min-width: 769px) {
-    padding: 0.5cm;
-  }
-
-  &::before {
-    content: "";
-    position: absolute;
-    top: 0.3cm;
-    left: 0.3cm;
-    right: 0.3cm;
-    bottom: 0.3cm;
-    border: 2px solid ${(props) => (props.$isCover ? "white" : "#2e6f40")};
-    border-radius: 20px;
-    pointer-events: none;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
-
-    @media (max-width: 768px) {
-      top: 0.3cm;
-      left: 0.3cm;
-      right: 0.3cm;
-      bottom: 0.3cm;
-    }
-  }
-
-  /* Book spine effect, only on cover */
-  ${(props) =>
-    props.$isCover &&
-    `&::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: -15px;
-      width: 20px;
-      height: 100%;
-      background: #6e7e4e;
-      border-radius: 5px;
-      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
-    }`}
-  box-shadow: inset -7px 0 30px -7px rgba(0, 0, 0, 0.4),
-    3px 0 10px rgba(0, 0, 0, 0.2);
-`;
 
 const BookContainer = styled.div`
   width: 100%;
@@ -152,9 +93,9 @@ const CoverContent = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: ${props => props.$isAuthenticated ? 'flex-start' : 'space-between'};
   position: relative;
-  padding: 10px;
+  padding: ${props => props.$isAuthenticated ? '10px' : '20px 10px'};
   overflow-y: auto;
 
   @media (max-width: 450px) {
@@ -170,31 +111,25 @@ const CoverContent = styled.div`
     color: white;
     font: "Parisienne";
     font-weight: bold;
-    font-size: 60px;
+    font-size: ${props => props.$isAuthenticated ? '60px' : '45px'};
     margin-bottom: 0px;
     padding: 0 10px;
-    margin-top: 10px;
+    margin-top: ${props => props.$isAuthenticated ? '10px' : '0'};
 
     @media (max-width: 560px) {
-      font-size: 50px;
-      margin-top: 5px;
+      font-size: ${props => props.$isAuthenticated ? '50px' : '40px'};
     }
 
     @media (max-width: 500px) {
-      font-size: 45px;
-      padding: 0 15px;
-      margin-top: 0;
+      font-size: ${props => props.$isAuthenticated ? '45px' : '35px'};
     }
 
     @media (max-width: 400px) {
-      font-size: 40px;
-      padding: 0 10px;
-      margin-top: 0;
+      font-size: ${props => props.$isAuthenticated ? '40px' : '30px'};
     }
 
     @media (max-width: 320px) {
-      font-size: 35px;
-      margin-top: 0;
+      font-size: ${props => props.$isAuthenticated ? '35px' : '25px'};
     }
   }
 
@@ -254,24 +189,12 @@ const CoverContent = styled.div`
     position: relative;
     z-index: 1000;
     width: 100%;
-    max-width: 300px;
-    background: #9daf89;
+    max-width: 280px;
+    background: rgba(157, 175, 137, 0.95);
     padding: 20px;
     border-radius: 8px;
-    margin-top: auto;
-    margin-bottom: 20px;
-
-    @media (max-width: 400px) {
-      max-width: 260px;
-      padding: 15px;
-      margin-top: 10px;
-    }
-
-    @media (max-width: 320px) {
-      max-width: 240px;
-      padding: 10px;
-      margin: 10px auto;
-    }
+    margin: 10px auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
 `;
 
@@ -285,15 +208,6 @@ const PageContent = styled.div`
   justify-content: flex-start;
   padding: 20px;
   overflow-y: auto;
-`;
-
-const PageTitle = styled.h2`
-  margin-bottom: 20px;
-  font-family: "Playfair Display", serif;
-  color: ${(props) =>
-    props.$isCover
-      ? "#2c3e50"
-      : "#2e6f40"}; /* Use #2e6f40 for non-cover pages */
 `;
 
 const EmptyMessage = styled.p`
@@ -427,76 +341,78 @@ const MessageIcon = styled.img`
   cursor: pointer;
 `;
 
-const MemoryPageContent = styled(PageContent)`
-  padding: 30px;
-  gap: 20px;
-
-  @media (max-width: 768px) {
-    padding: 20px;
-    gap: 15px;
-  }
-`;
-
-const MemoryImage = styled.img`
+const PageContainer = styled.div.attrs(props => ({
+  'data-is-cover': props.$isCover
+}))`
+  background-color: ${(props) => (props.$isCover ? "#9daf89" : "#FAF9F6")};
+  border: 1px solid #c2c2c2;
+  border-radius: ${(props) => props.$isCover ? "0 10px 10px 0" : "0"};
+  box-shadow: inset -7px 0 30px -7px rgba(0, 0, 0, 0.4);
+  height: 100%;
   width: 100%;
-  max-height: 60%;
-  object-fit: contain;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-`;
-
-const MemoryMessage = styled.p`
-  font-family: "Lato", sans-serif;
-  font-size: 1.1em;
-  line-height: 1.6;
-  color: #2c3e50;
-  text-align: center;
-  margin: 15px 0;
-  font-style: italic;
-`;
-
-const MemoryFooter = styled.div`
+  padding: 0.3cm;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
-  margin-top: auto;
+  justify-content: flex-start;
+  position: relative;
+  overflow: hidden;
+
+  @media (min-width: 769px) {
+    padding: 0.5cm;
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0.3cm;
+    left: 0.3cm;
+    right: 0.3cm;
+    bottom: 0.3cm;
+    border: 2px solid ${(props) => (props.$isCover ? "white" : "#2e6f40")};
+    border-radius: 20px;
+    pointer-events: none;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+
+    @media (max-width: 768px) {
+      top: 0.3cm;
+      left: 0.3cm;
+      right: 0.3cm;
+      bottom: 0.3cm;
+    }
+  }
+
+  /* Book spine effect, only on cover */
+  ${(props) =>
+    props.$isCover &&
+    `&::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -15px;
+      width: 20px;
+      height: 100%;
+      background: #6e7e4e;
+      border-radius: 5px;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
+    }`}
+  box-shadow: inset -7px 0 30px -7px rgba(0, 0, 0, 0.4),
+    3px 0 10px rgba(0, 0, 0, 0.2);
 `;
 
-const GuestName = styled.span`
+const PageTitle = styled.h2`
+  margin-bottom: 20px;
   font-family: "Playfair Display", serif;
-  font-weight: 600;
-  color: #2e6f40;
-  font-size: 1.2em;
+  color: ${(props) =>
+    props.$isCover
+      ? "#2c3e50"
+      : "#2e6f40"}; /* Use #2e6f40 for non-cover pages */
 `;
-
-const DateStamp = styled.span`
-  font-family: "Lato", sans-serif;
-  color: #95a5a6;
-  font-size: 0.9em;
-`;
-
-const MemoryPage = ({ image, message, guestName, date, pageNumber }) => {
-  return (
-    <div className="page">
-      <Page number={pageNumber}>
-        <MemoryPageContent $isAuthenticated={true}>
-          <PageTitle $isCover={false}>A Special Memory</PageTitle>
-          <MemoryImage src={image} alt={`Memory from ${guestName}`} />
-          <MemoryMessage>{message}</MemoryMessage>
-          <MemoryFooter>
-            <GuestName>{guestName}</GuestName>
-            <DateStamp>{new Date(date).toLocaleDateString()}</DateStamp>
-          </MemoryFooter>
-        </MemoryPageContent>
-      </Page>
-    </div>
-  );
-};
 
 const Page = ({ number, isCover, children }) => {
+  const isAuthenticated = authService.isAuthenticated();
   return (
-    <PageContainer $isCover={isCover}>
+    <PageContainer $isCover={isCover} $isAuthenticated={isAuthenticated}>
       {children}
       {number && <PageNumber>{number}</PageNumber>}
     </PageContainer>
@@ -542,7 +458,7 @@ const BackCover = styled(PageContainer)`
     font-weight: 400;
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 600px) {
     img {
       width: 150px;
       height: 150px;
@@ -559,20 +475,143 @@ const BackCover = styled(PageContainer)`
   }
 `;
 
+const MemoryPageContent = styled.div`
+    opacity: ${(props) => (props.$isAuthenticated ? 1 : 0)};
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 20px;
+    overflow-y: auto;
+
+    @media (max-width: 600px) {
+        padding: 20px;
+        gap: 15px;
+    }
+`;
+
+const MemoryImage = styled.img`
+  width: 100%;
+  max-height: 60%;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+`;
+
+const MemoryMessage = styled.p`
+  font-family: "Playfair Display", serif;
+  font-size: 1.1em;
+  line-height: 1.6;
+  color: #2c3e50;
+  text-align: center;
+  margin: 15px 0;
+  font-style: italic;
+`;
+
+const MemoryFooter = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  margin-top: auto;
+`;
+
+const GuestName = styled.span`
+  font-family: "Playfair Display", serif;
+  font-weight: 600;
+  color: #2e6f40;
+  font-size: 1.2em;
+`;
+
+const DateStamp = styled.span`
+  font-family: "Playfair Display", serif;
+  color: #95a5a6;
+  font-size: 0.9em;
+`;
+
 const Book = ({ onLogin }) => {
-  const [submissions, setSubmissions] = useState([]);
-  const [refreshTrigger, setRefreshTrigger] = useState(false);
-  const [showHint, setShowHint] = useState(true);
-  const [page, setPage] = useState(0);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [refreshTrigger, setRefreshTrigger] = useState(false);
+  const [page, setPage] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const [submissions, setSubmissions] = useState([]);
+  const [showBook, setShowBook] = useState(true);
   const bookRef = useRef(null);
-  const isAuthenticated = authService.isAuthenticated();
+  const containerRef = useRef(null);
+  const [showHint, setShowHint] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Add a constant for fixed pages (excluding dynamic submission pages)
+  const FIXED_PAGES = {
+    FRONT_COVER: 0,
+    SHARE_MEMORY: 1,
+    GALLERY_GRID: 2,
+    FINAL_MESSAGE: 3,
+    BACK_COVER: 4
+  };
+
+  const totalPages = submissions.length + Object.keys(FIXED_PAGES).length;
+
+  // Replace the initialization effect with a dimensions calculation effect
+  useEffect(() => {
+    const calculateDimensions = () => {
+      // For unauthenticated state, use smaller dimensions for login form
+      if (!isAuthenticated) {
+        const baseWidth = Math.min(320, window.innerWidth - 80);
+        const baseHeight = Math.min(686, window.innerHeight - 120);
+        
+        // Adjust dimensions based on screen size
+        const width = window.innerWidth <= 320 ? baseWidth :
+                     window.innerWidth <= 375 ? 300 :
+                     window.innerWidth <= 412 ? 320 :
+                     window.innerWidth <= 600 ? 350 :
+                     400;
+        
+        const height = window.innerWidth <= 320 ? baseHeight :
+                      window.innerWidth <= 375 ? 600 :
+                      window.innerWidth <= 412 ? 650 :
+                      window.innerWidth <= 600 ? 686 :
+                      700;
+
+        setDimensions({ width, height });
+        setIsInitialized(true);
+        setLoading(false);
+        return;
+      }
+
+      // For authenticated state, use full book dimensions
+      const width = isMobile ? (
+        window.innerWidth >= 600 ? 550 :
+        window.innerWidth >= 412 ? 392 :
+        window.innerWidth >= 375 ? 355 :
+        320
+      ) : 550;
+
+      const height = isMobile ? (
+        window.innerWidth >= 600 ? Math.min(800, window.innerHeight - 100) :
+        window.innerWidth >= 412 ? Math.min(750, window.innerHeight - 80) :
+        Math.min(600, window.innerHeight - 60)
+      ) : Math.min(900, window.innerHeight - 100);
+
+      setDimensions({ width, height });
+      setIsInitialized(true);
+      setLoading(false);
+    };
+
+    calculateDimensions();
+  }, [isMobile, isAuthenticated]);
 
   // Add resize listener
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
+      setIsMobile(window.innerWidth <= 600);
     };
 
     window.addEventListener('resize', handleResize);
@@ -588,30 +627,28 @@ const Book = ({ onLogin }) => {
 
   const handleLogin = async () => {
     try {
+      console.log('Starting login process...');
       await onLogin();
       
-      // Force immediate state updates
       const isAuthed = authService.isAuthenticated();
+      console.log('Login completed, auth status:', isAuthed);
+      
       if (isAuthed) {
+        setIsAuthenticated(true);
+        setShowConfetti(true);
+        
         // Reset book state
         if (bookRef.current && bookRef.current.pageFlip) {
           bookRef.current.pageFlip().flip(0);
         }
         setPage(0);
         
-        // Update UI state
-        setShowConfetti(true);
+        // Trigger refresh
         setRefreshTrigger(prev => !prev);
-        
-        // Force a re-render after a brief delay on mobile
-        if (window.innerWidth <= 768) {
-          setTimeout(() => {
-            setRefreshTrigger(prev => !prev);
-          }, 100);
-        }
       }
     } catch (error) {
       console.error('Login error:', error);
+      setLoading(false);
     }
   };
 
@@ -620,6 +657,32 @@ const Book = ({ onLogin }) => {
     console.log("New image received:", newImage); // ✅ Debugging step
     setRefreshTrigger((prev) => !prev); // ✅ Trigger gallery refresh
   };
+
+  useEffect(() => {
+  if (isAuthenticated) {
+    console.log("Fetching submissions via useEffect...");
+    fetchSubmissions();
+  }
+}, [refreshTrigger, isAuthenticated]); // Add isAuthenticated to dependencies
+  
+  const fetchSubmissions = async () => {
+  if (!isAuthenticated) {
+    return; // Don't attempt to fetch if not authenticated
+  }
+
+    try {
+      setLoading(true);
+      const data = await galleryService.getAllImages();  // Fetch from backend
+      console.log("Fetched submissions Book.jsx:", data);
+      setSubmissions(data);  // Store the images/messages
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching submissions:", err);
+      setError("Failed to load images. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };  
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -676,11 +739,8 @@ const Book = ({ onLogin }) => {
     setPage(e.data);
   };
 
-  const photoSubmissions = submissions.filter((sub) => sub.image);
-  const messageSubmissions = submissions.filter((sub) => sub.comment);
-
   return (
-    <BookContainer>
+    <BookContainer ref={containerRef}>
       {showConfetti && (
         <Confetti
           width={window.innerWidth}
@@ -690,166 +750,155 @@ const Book = ({ onLogin }) => {
           colors={["#FFD700", "#FFA500", "#FF69B4", "#87CEEB", "#98FB98"]}
         />
       )}
-      <HTMLFlipBook
-        ref={bookRef}
-        width={isMobile ? (
-          window.innerWidth >= 600 ? 550 :
-          window.innerWidth >= 412 ? 392 :
-          window.innerWidth >= 375 ? 355 :
-          320
-        ) : 550}
-        height={isMobile ? (
-          window.innerWidth >= 600 ? 733 :
-          window.innerWidth >= 412 ? 750 :
-          500
-        ) : 733}
-        size="stretch"
-        minWidth={280}
-        maxWidth={isMobile ? (
-          window.innerWidth >= 600 ? 550 :
-          window.innerWidth >= 412 ? 392 :
-          window.innerWidth >= 375 ? 355 :
-          320
-        ) : 1100}
-        minHeight={400}
-        maxHeight={isMobile ? (
-          window.innerWidth >= 600 ? 733 :
-          window.innerWidth >= 412 ? 750 :
-          500
-        ) : window.innerHeight - 100}
-        maxShadowOpacity={0.5}
-        showCover={true}
-        mobileScrollSupport={isAuthenticated}
-        className="demo-book"
-        disabled={!isAuthenticated}
-        flippingTime={1000}
-        useMouseEvents={false}
-        swipeDistance={0}
-        clickEventForward={false}
-        usePortrait={isMobile}
-        startPage={0}
-        onFlip={onFlip}
-        drawShadow={true}
-        autoSize={true}
-        key={isAuthenticated ? 'auth' : 'unauth'}
-      >
-        <div className="page">
-          <Page isCover={true}>
-            <CoverContent>
-              <h1>Katie & Alex</h1>
-              <p>Wedding Guest Book & Photo Album</p>
-              <img src="/images/cat_wedding.png" alt="Wedding image" />
-              {!isAuthenticated && (
-                <div className="login-area">
-                  <LoginForm onLogin={handleLogin} />
-                </div>
-              )}
-            </CoverContent>
-          </Page>
-        </div>
-
-        <div className="page">
-          <Page number="1">
-            <PageContent $isAuthenticated={isAuthenticated}>
-              <GuestbookIcon
-                src="/images/guestbook-icon.svg"
-                alt="Guestbook Icon"
-                onClick={() => console.log("Guestbook Icon Clicked")}
-              />
-              <PageTitle $isCover={false}>Share Your Memory</PageTitle>
-              <PhotoUpload setRefreshTrigger={setRefreshTrigger} onSuccess={handleImageUploadSuccess} />
-            </PageContent>
-          </Page>
-        </div>
-
-        <div className="page">
-          <Page number="2">
-            <PageContent $isAuthenticated={isAuthenticated}>
-              <CameraIcon
-                src="/images/cameraheart-icon.svg"
-                alt="Camera Icon"
-                onClick={() => console.log("Camera Icon Clicked")}
-              />
-              <PageTitle $isCover={false}>Photo Gallery</PageTitle>
-              <GalleryGrid refreshTrigger={refreshTrigger} />
-            </PageContent>
-          </Page>
-        </div>
-
-        <div className="page">
-          <Page number="3">
-            <PageContent $isAuthenticated={isAuthenticated}>
-              <MessageIcon
-                src="/images/message-icon.svg"
-                alt="Message Icon"
-                onClick={() => console.log("Message Icon Clicked")}
-              />
-              <PageTitle $isCover={false}>Guest Messages</PageTitle>
-              {messageSubmissions.length > 0 ? (
-                <GalleryGrid refreshTrigger={refreshTrigger} />
-              ) : (
-                <EmptyMessage>
-                  No messages have been shared yet. Be the first!
-                </EmptyMessage>
-              )}
-            </PageContent>
-          </Page>
-        </div>
-
-        <div className="page">
-          <Page number="4">
-            <PageContent $isAuthenticated={isAuthenticated}>
-              <ThankfulIcon
-                src="/images/thankful-icon.svg"
-                alt="Thankful Icon"
-              />
-              <PageTitle $isCover={false}>Snappily Ever After</PageTitle>
-              <p style={{ textAlign: 'center', margin: '1rem 0' }}>And just like that, our adventure begins!</p>
-              <p style={{ textAlign: 'center', margin: '1rem 0' }}>
-                Thank you for making our day unforgettable – for the laughter, the love, and the questionable dance moves!
-              </p>
-              <p style={{ textAlign: 'center', margin: '1rem 0' }}>
-                This book is filled with all the memories you helped create.
-              </p>
-              <p style={{ textAlign: 'center', margin: '2rem 0', fontStyle: 'italic' }}>
-                Here's to many more chapters together!
-              </p>
-            </PageContent>
-          </Page>
-        </div>
-
-        <div className="page">
-          <BackCover>
-            <img 
-              src="/images/cat_wedding.png" 
-              alt="Wedding cats" 
-              style={{ 
-                transform: 'scale(1.1)',
-                filter: 'brightness(1.1) saturate(0.9) opacity(0.85)'
-              }} 
-            />
-            <p>With love</p>
-            <h2>Katie & Alex</h2>
-          </BackCover>
-        </div>
-      </HTMLFlipBook>
-      {isAuthenticated && (
-        <NavigationButtons>
-          <NavButton 
-            onClick={prevPage} 
-            disabled={page === 0}
-            data-direction="prev"
+      {showBook && (
+        <div className="book-wrapper">
+          <HTMLFlipBook
+            key={`book-${isAuthenticated}-${loading}-${submissions.length}`}
+            ref={bookRef}
+            width={dimensions.width}
+            height={dimensions.height}
+            size="stretch"
+            minWidth={280}
+            maxWidth={dimensions.width}
+            minHeight={400}
+            maxHeight={dimensions.height}
+            maxShadowOpacity={0.5}
+            showCover={true}
+            mobileScrollSupport={isAuthenticated}
+            className="demo-book"
+            disabled={!isAuthenticated}
+            flippingTime={1000}
+            useMouseEvents={false}
+            swipeDistance={0}
+            clickEventForward={false}
+            usePortrait={isMobile}
+            startPage={0}
+            onFlip={onFlip}
+            drawShadow={true}
+            autoSize={true}
           >
-            <span>← Previous Page</span>
-          </NavButton>
-          <NavButton 
-            onClick={nextPage} 
-            disabled={page === 4}
-            data-direction="next"
-          >
-            <span>Next Page →</span>
-          </NavButton>
-        </NavigationButtons>
+            {/* Cover Page */}
+            <div className="page">
+              <Page isCover={true}>
+                <CoverContent $isAuthenticated={isAuthenticated}>
+                  <h1>Katie & Alex</h1>
+                  <p>Wedding Guest Book & Photo Album</p>
+                  <img src="/images/cat_wedding.png" alt="Wedding image" />
+                  {!isAuthenticated && (
+                    <div className="login-area">
+                      <LoginForm onLogin={handleLogin} />
+                    </div>
+                  )}
+                </CoverContent>
+              </Page>
+            </div>
+
+            {/* Share Memory Page */}
+            <div className="page">
+              <Page number="1">
+                <PageContent $isAuthenticated={isAuthenticated}>
+                  <GuestbookIcon
+                    src="/images/guestbook-icon.svg"
+                    alt="Guestbook Icon"
+                    onClick={() => console.log("Guestbook Icon Clicked")}
+                  />
+                  <PageTitle $isCover={false}>Share Your Memory</PageTitle>
+                  <PhotoUpload setRefreshTrigger={setRefreshTrigger} onSuccess={handleImageUploadSuccess} />
+                </PageContent>
+              </Page>
+            </div>
+
+            {/* Memory Pages */}
+            {submissions.map((submission, index) => (
+              <div className="page" key={`memory-${submission.id}`}>
+                <Page number={index + 2}>
+                  <MemoryPageContent $isAuthenticated={isAuthenticated}>
+                    <PageTitle $isCover={false}>A Snap in Time</PageTitle>
+                    <MemoryImage src={submission.image} alt={`Memory from ${submission.name}`} />
+                    <MemoryMessage>{submission.comment || "Captured a beautiful moment!"}</MemoryMessage>
+                    <MemoryFooter>
+                      <GuestName>{submission.name}</GuestName>
+                      <DateStamp>{new Date(submission.uploaded_at).toLocaleDateString()}</DateStamp>
+                    </MemoryFooter>
+                  </MemoryPageContent>
+                </Page>
+              </div>
+            ))}
+
+            {/* Gallery Grid Page */}
+            <div className="page">
+              <Page number={submissions.length + 2}>
+                <PageContent $isAuthenticated={isAuthenticated}>
+                  <CameraIcon
+                    src="/images/cameraheart-icon.svg"
+                    alt="Camera Icon"
+                    onClick={() => console.log("Camera Icon Clicked")}
+                  />
+                  <PageTitle $isCover={false}>Snappily Collected Moments</PageTitle>
+                  <GalleryGrid refreshTrigger={refreshTrigger} />
+                </PageContent>
+              </Page>
+            </div>
+
+            {/* Final Message Page */}
+            <div className="page">
+              <Page number={submissions.length + 3}>
+                <PageContent $isAuthenticated={isAuthenticated}>
+                  <ThankfulIcon
+                    src="/images/thankful-icon.svg"
+                    alt="Thankful Icon"
+                  />
+                  <PageTitle $isCover={false}>Snappily Ever After</PageTitle>
+                  <p style={{ textAlign: 'center', margin: '1rem 0' }}>And just like that, our adventure begins!</p>
+                  <p style={{ textAlign: 'center', margin: '1rem 0' }}>
+                    Thank you for making our day unforgettable – for the laughter, the love, and the questionable dance moves!
+                  </p>
+                  <p style={{ textAlign: 'center', margin: '1rem 0' }}>
+                    This book is filled with all the memories you helped create.
+                  </p>
+                  <p style={{ textAlign: 'center', margin: '2rem 0', fontStyle: 'italic' }}>
+                    Here's to many more chapters together!
+                  </p>
+                </PageContent>
+              </Page>
+            </div>
+
+            {/* Back Cover */}
+            <div className="page">
+              <BackCover>
+                <img 
+                  src="/images/cat_wedding.png" 
+                  alt="Wedding cats" 
+                  style={{ 
+                    transform: 'scale(1.1)',
+                    filter: 'brightness(1.1) saturate(0.9) opacity(0.85)'
+                  }} 
+                />
+                <p>With love</p>
+                <h2>Katie & Alex</h2>
+              </BackCover>
+            </div>
+          </HTMLFlipBook>
+            
+          {isAuthenticated && (
+            <NavigationButtons>
+              <NavButton 
+                onClick={prevPage} 
+                disabled={page === 0}
+                data-direction="prev"
+              >
+                <span>← Previous Page</span>
+              </NavButton>
+              <NavButton 
+                onClick={nextPage} 
+                disabled={page === totalPages - 1}
+                data-direction="next"
+              >
+                <span>Next Page →</span>
+              </NavButton>
+            </NavigationButtons>
+          )}
+        </div>
       )}
     </BookContainer>
   );

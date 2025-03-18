@@ -75,9 +75,9 @@ const DownloadButton = styled.button`
   }
 `;
 
-const MessageContent = styled.div`
-  padding: 10px 0;
-`;
+// const MessageContent = styled.div`
+//   padding: 10px 0;
+// `;
 
 const GuestName = styled.h3`
   font-family: 'Playfair Display', serif;
@@ -86,13 +86,13 @@ const GuestName = styled.h3`
   font-size: 1.1em;
 `;
 
-const Message = styled.p`
-  font-family: 'Lato', sans-serif;
-  color: #34495e;
-  margin: 8px 0;
-  font-size: 0.9em;
-  line-height: 1.4;
-`;
+// const Message = styled.p`
+//   font-family: 'Lato', sans-serif;
+//   color: #34495e;
+//   margin: 8px 0;
+//   font-size: 0.9em;
+//   line-height: 1.4;
+// `;
 
 const Timestamp = styled.span`
   font-size: 0.8em;
@@ -134,36 +134,42 @@ const ErrorMessage = styled.div`
 `;
 
 const GalleryGrid = ({ refreshTrigger }) => {
-  console.log("GalleryGrid received refreshTrigger:", refreshTrigger); // ✅ Debugging step
+  console.log("GalleryGrid received refreshTrigger:", refreshTrigger);
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const isAdmin = authService.isAdmin();
+  const isAuthenticated = authService.isAuthenticated();
 
   useEffect(() => {
-    console.log("useEffect triggered on mount"); // ✅ Debugging
-    fetchSubmissions();
-  }, []); // ✅ Runs on mount
-  
-  useEffect(() => {
-    if (refreshTrigger) {
-      console.log("Refresh Trigger Activated! Fetching submissions again..."); // ✅ Debugging
+    if (isAuthenticated) {
+      console.log("useEffect triggered on mount");
       fetchSubmissions();
     }
-  }, [refreshTrigger]); // ✅ Runs when a new image is uploaded
+  }, [isAuthenticated]);
+  
+  useEffect(() => {
+    if (refreshTrigger && isAuthenticated) {
+      console.log("Refresh Trigger Activated! Fetching submissions again...");
+      fetchSubmissions();
+    }
+  }, [refreshTrigger, isAuthenticated]);
 
   const fetchSubmissions = async () => {
-    console.log("fetchSubmissions() called");  // ✅ Check if function runs
+    if (!isAuthenticated) {
+      return;
+    }
+
+    console.log("fetchSubmissions() called");
     try {
       setLoading(true);
       const data = await galleryService.getAllImages();
-      console.log("Fetched data from API:", data); // ✅ Check API response
+      console.log("Fetched data from API:", data);
       setSubmissions(data);
       setError(null);
     } catch (err) {
-      setError('Failed to load images. Please try again later.');
       console.error('Error fetching submissions:', err);
-      setError("Failed to load Images. Please try again later.")
+      setError("Failed to load images. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -246,11 +252,6 @@ const GalleryGrid = ({ refreshTrigger }) => {
               )}
             </ImageContainer>
           )}
-          <MessageContent>
-            <GuestName>{submission.name}</GuestName>
-            {submission.comment && (
-              <Message>{submission.comment}</Message>
-            )}
             <Timestamp>
               {new Date(submission.uploaded_at).toLocaleDateString('en-AU', {
                 day: 'numeric',
@@ -260,7 +261,6 @@ const GalleryGrid = ({ refreshTrigger }) => {
                 minute: '2-digit'
               })}
             </Timestamp>
-          </MessageContent>
         </Card>
       ))}
     </Grid>
