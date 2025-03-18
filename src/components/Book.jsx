@@ -11,68 +11,31 @@ import { Link } from "react-router-dom";
 
 const BookContainer = styled.div`
   width: 100%;
-  height: calc(100vh - 60px);
-  min-height: 600px;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 20px;
+  padding: ${props => props.$isAuthenticated ? '20px' : '30px 20px'};
   margin: 0;
   position: relative;
   overflow: hidden;
-  opacity: ${props => (props.$isLoading && props.$isAuthenticated) ? 0 : 1};
-  transition: opacity 0.3s ease-in;
-
-  .page {
-    display: flex;
-    width: 100%;
-    height: 100%;
-  }
 
   .demo-book {
     width: 100% !important;
-    max-width: 320px !important;
-    margin: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
+    max-width: ${props => props.$isAuthenticated ? '320px' : '300px'} !important;
+    height: ${props => !props.$isAuthenticated ? '500px' : 'auto'} !important;
+    margin: 0 auto !important;
     position: relative !important;
-    opacity: ${props => (props.$isLoading && props.$isAuthenticated) ? 0 : 1};
-    transition: opacity 0.3s ease-in;
-    visibility: ${props => (props.$isLoading && props.$isAuthenticated) ? 'hidden' : 'visible'};
+    opacity: 1;
+    visibility: visible;
+    overflow: hidden !important;
 
-    @media (max-width: 320px) {
-      padding: 0 !important;
-      margin: 0 !important;
-      left: 0 !important;
-      right: 0 !important;
-      max-width: 100% !important;
-    }
-
-    @media (min-width: 375px) and (max-width: 411px) {
-      max-width: 355px !important;
-      margin: 0 auto !important;
-      padding: 0 10px !important;
-    }
-
-    @media (min-width: 412px) and (max-width: 599px) {
-      max-width: 392px !important;
-      margin: 0 auto !important;
-      padding: 0 !important;
-      left: 50% !important;
-      transform: translateX(-50%) !important;
-    }
-
-    @media (min-width: 600px) and (max-width: 768px) {
-      max-width: 550px !important;
-      margin: 0 auto !important;
-      padding: 0 !important;
-      left: 50% !important;
-      transform: translateX(-50%) !important;
-    }
-
-    @media (min-width: 769px) {
-      max-width: 1400px !important;
+    .page {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
     }
   }
 
@@ -105,9 +68,9 @@ const CoverContent = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: ${props => props.$isAuthenticated ? 'flex-start' : 'center'};
+  justify-content: ${props => props.$isAuthenticated ? 'flex-start' : 'space-between'};
   position: relative;
-  padding: 10px;
+  padding: ${props => props.$isAuthenticated ? '10px' : '20px 10px'};
   overflow-y: auto;
 
   @media (max-width: 450px) {
@@ -201,24 +164,12 @@ const CoverContent = styled.div`
     position: relative;
     z-index: 1000;
     width: 100%;
-    max-width: 300px;
+    max-width: 280px;
     background: rgba(157, 175, 137, 0.95);
     padding: 20px;
     border-radius: 8px;
-    margin: 20px auto;
+    margin: 10px auto;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-
-    @media (max-width: 400px) {
-      max-width: 260px;
-      padding: 15px;
-      margin: 15px auto;
-    }
-
-    @media (max-width: 320px) {
-      max-width: 240px;
-      padding: 10px;
-      margin: 10px auto;
-    }
   }
 `;
 
@@ -370,30 +321,25 @@ const PageContainer = styled.div.attrs(props => ({
 }))`
   background-color: ${(props) => (props.$isCover ? "#9daf89" : "#FAF9F6")};
   border: 1px solid #c2c2c2;
-  border-radius: ${(props) =>
-    props.$isCover ? "0 10px 10px 0" : "0"}; /* Only rounded corners on cover */
+  border-radius: ${(props) => props.$isCover ? "0 10px 10px 0" : "0"};
   box-shadow: inset -7px 0 30px -7px rgba(0, 0, 0, 0.4);
-  height: 100%;
+  height: ${props => props.$isCover && !props.$isAuthenticated ? '100%' : '100%'};
   width: 100%;
-  padding: 0.3cm;
+  padding: 0.5cm;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   position: relative;
   overflow: hidden;
-
-  @media (min-width: 600px) {
-    padding: 0.5cm;
-  }
 
   &::before {
     content: "";
     position: absolute;
-    top: 0.3cm;
-    left: 0.3cm;
-    right: 0.3cm;
-    bottom: 0.3cm;
+    top: 0.5cm;
+    left: 0.5cm;
+    right: 0.5cm;
+    bottom: 0.5cm;
     border: 2px solid ${(props) => (props.$isCover ? "white" : "#2e6f40")};
     border-radius: 20px;
     pointer-events: none;
@@ -428,13 +374,14 @@ const PageTitle = styled.h2`
 `;
 
 const Page = ({ number, isCover, children }) => {
+  const isAuthenticated = authService.isAuthenticated();
   return (
-    <PageContainer $isCover={isCover}>
+    <PageContainer $isCover={isCover} $isAuthenticated={isAuthenticated}>
       {children}
       {number && <PageNumber>{number}</PageNumber>}
     </PageContainer>
   );
-}; 
+};
 
 const BackCover = styled(PageContainer)`
   background-color: #9daf89;
@@ -581,10 +528,23 @@ const Book = ({ onLogin }) => {
     const calculateDimensions = () => {
       // For unauthenticated state, use smaller dimensions for login form
       if (!isAuthenticated) {
-        setDimensions({
-          width: Math.min(320, window.innerWidth - 40),
-          height: Math.min(500, window.innerHeight - 100)
-        });
+        const baseWidth = Math.min(320, window.innerWidth - 80);
+        const baseHeight = Math.min(686, window.innerHeight - 120);
+        
+        // Adjust dimensions based on screen size
+        const width = window.innerWidth <= 320 ? baseWidth :
+                     window.innerWidth <= 375 ? 300 :
+                     window.innerWidth <= 412 ? 320 :
+                     window.innerWidth <= 600 ? 350 :
+                     400;
+        
+        const height = window.innerWidth <= 320 ? baseHeight :
+                      window.innerWidth <= 375 ? 600 :
+                      window.innerWidth <= 412 ? 650 :
+                      window.innerWidth <= 600 ? 686 :
+                      700;
+
+        setDimensions({ width, height });
         setIsInitialized(true);
         setLoading(false);
         return;
@@ -636,6 +596,7 @@ const Book = ({ onLogin }) => {
       // Force immediate state updates
       const isAuthed = authService.isAuthenticated();
       if (isAuthed) {
+        setLoading(true); // Set loading to prevent green flash
         // Reset book state
         if (bookRef.current && bookRef.current.pageFlip) {
           bookRef.current.pageFlip().flip(0);
@@ -655,6 +616,7 @@ const Book = ({ onLogin }) => {
       }
     } catch (error) {
       console.error('Login error:', error);
+      setLoading(false);
     }
   };
 
@@ -778,8 +740,8 @@ const Book = ({ onLogin }) => {
         className="demo-book"
         disabled={!isAuthenticated}
         flippingTime={1000}
-        useMouseEvents={true}
-        swipeDistance={30}
+        useMouseEvents={isAuthenticated}
+        swipeDistance={isAuthenticated ? 30 : 0}
         clickEventForward={false}
         usePortrait={isMobile}
         startPage={0}
