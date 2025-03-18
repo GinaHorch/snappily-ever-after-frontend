@@ -129,8 +129,6 @@ const Form = styled.form`
   display: flex;
   flex-direction: column;
   gap: 15px;
-  position: relative;
-  z-index: 1000;
   
   @media (max-width: 768px) {
     scroll-behavior: smooth;
@@ -160,10 +158,6 @@ const Form = styled.form`
     }
   }
 
-  * {
-    pointer-events: auto !important;
-  }
-
   @media (max-width: 450px) {
     gap: 10px;
     padding-bottom: 55px;
@@ -181,8 +175,6 @@ const Input = styled.input`
   border-radius: 8px;
   font-size: 16px;
   font-family: "Lato", sans-serif;
-  position: relative;
-  z-index: 1000;
 
   &:focus {
     outline: none;
@@ -263,6 +255,30 @@ const SuccessMessage = styled.p`
   font-weight: bold;
   text-align: center;
   margin-top: 10px;
+`;
+
+const Instructions = styled.div`
+  background-color: rgba(46, 111, 64, 0.05);
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: #2e6f40;
+  line-height: 1.5;
+
+  ul {
+    margin: 10px 0;
+    padding-left: 20px;
+  }
+
+  li {
+    margin-bottom: 8px;
+  }
+
+  @media (max-width: 360px) {
+    padding: 12px;
+    font-size: 13px;
+  }
 `;
 
 const PhotoUpload = ({ setRefreshTrigger, onSuccess }) => {
@@ -358,6 +374,14 @@ const PhotoUpload = ({ setRefreshTrigger, onSuccess }) => {
 
   return (
     <UploadContainer>
+      <Instructions>
+        <strong>How to share your memory:</strong>
+        <ul>
+          <li><strong>Your Name</strong> is required - this helps Katie and Alex know who left the memory</li>
+          <li><strong>Message</strong> is optional - feel free to share your thoughts or leave it blank</li>
+          <li><strong>Photo</strong> - you can upload one photo per memory, but feel free to submit multiple memories</li>
+        </ul>
+      </Instructions>
       <Form onSubmit={handleSubmit}>
         <FormSection>
           <h3>Your Details</h3>
