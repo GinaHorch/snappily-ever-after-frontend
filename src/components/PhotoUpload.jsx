@@ -337,35 +337,28 @@ const PhotoUpload = ({ setRefreshTrigger, onSuccess }) => {
         imageFile: image || null,
         comment: message,
         name: guestName,
-    });
+      });
 
-      console.log("Upload successful:", response); // ✅ Debugging step
+      console.log("Upload successful:", response);
 
-      // ✅ Trigger GalleryGrid update if onSuccess exists
-      if (onSuccess) {
-        console.log("Triggering onSuccess callback...");
-        onSuccess(response);
-      }
-
-      // ✅ Trigger refresh in GalleryGrid
-      setRefreshTrigger((prev) => {
-        console.log("Toggling refreshTrigger. Previous:", prev, "New:", !prev); // ✅ Step 6: Debug state update
-        return !prev;
-    });
-    
-      // ✅ Show success message
+      // Show success message
       setSuccessMessage("Your memory has been shared successfully! 🎉");
+      
       // Reset form
       setGuestName("");
       setMessage("");
       setImage(null);
       setPreview(null);
 
-      // Trigger refresh
-      setRefreshTrigger(prev => !prev);
+      // Single refresh trigger
+      if (setRefreshTrigger) {
+        console.log("Triggering refresh after successful upload");
+        setRefreshTrigger(prev => !prev);
+      }
       
       // Call success callback if provided
       if (onSuccess) {
+        console.log("Calling onSuccess callback");
         onSuccess(response);
       }
     } catch (err) {

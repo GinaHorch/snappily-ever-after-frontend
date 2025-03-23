@@ -675,35 +675,52 @@ const Book = ({ onLogin }) => {
 
   // ✅ Define image upload success handler here
   const handleImageUploadSuccess = (newImage) => {
-    console.log("New image received:", newImage); // ✅ Debugging step
-    setRefreshTrigger((prev) => !prev); // ✅ Trigger gallery refresh
+    console.log("New image received:", newImage);
+    fetchSubmissions(); // Directly fetch submissions instead of using refreshTrigger
   };
 
   useEffect(() => {
-  if (isAuthenticated) {
-    console.log("Fetching submissions via useEffect...");
-    fetchSubmissions();
-  }
-}, [refreshTrigger, isAuthenticated]); // Add isAuthenticated to dependencies
-  
+    if (isAuthenticated) {
+      console.log("Fetching submissions via useEffect...");
+      fetchSubmissions();
+    }
+  }, [refreshTrigger, isAuthenticated]);
+
   const fetchSubmissions = async () => {
-  if (!isAuthenticated) {
-    return; // Don't attempt to fetch if not authenticated
-  }
+    if (!isAuthenticated) {
+      return;
+    }
 
     try {
       setLoading(true);
-      const data = await galleryService.getAllImages();  // Fetch from backend
+      const data = await galleryService.getAllImages();
       console.log("Fetched submissions Book.jsx:", data);
-      setSubmissions(data);  // Store the images/messages
+      setSubmissions(data);
       setError(null);
     } catch (err) {
       console.error("Error fetching submissions:", err);
+      if (err.response?.status === 401) {
+        // If unauthorized, refresh the token instead of logging out
+        try {
+          const token = localStorage.getItem('token');
+          if (token) {
+            // Re-authenticate silently
+            await authService.refreshToken();
+            // Retry fetching submissions
+            const data = await galleryService.getAllImages();
+            setSubmissions(data);
+            setError(null);
+            return;
+          }
+        } catch (refreshError) {
+          console.error("Token refresh failed:", refreshError);
+        }
+      }
       setError("Failed to load images. Please try again.");
     } finally {
       setLoading(false);
     }
-  };  
+  };
 
   useEffect(() => {
     if (isAuthenticated) {

@@ -102,4 +102,28 @@ export const authService = {
       throw error.response?.data || { error: 'Failed to change credentials' };
     }
   },
+
+  // Refresh token
+  refreshToken: async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No token found');
+      }
+
+      const response = await api.post('/refresh-token/', {
+        token: token
+      });
+
+      // Update token in localStorage
+      localStorage.setItem('token', response.data.token);
+      
+      return response.data;
+    } catch (error) {
+      console.error('Token refresh error:', error);
+      // If refresh fails, clear auth data
+      authService.logout();
+      throw error;
+    }
+  },
 }; 
