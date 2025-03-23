@@ -295,7 +295,7 @@ const PhotoUpload = ({ setRefreshTrigger, onSuccess }) => {
 
   const onDrop = useCallback((acceptedFiles) => {
     if (acceptedFiles.length > 1) {
-      setError("Please select only one photo at a time");
+      setError("Please select only one photo at a time. You can add more memories by submitting them separately.");
       return;
     }
     
@@ -383,7 +383,7 @@ const PhotoUpload = ({ setRefreshTrigger, onSuccess }) => {
         <ul>
           <li><strong>Your Name</strong> is required - this helps Katie and Alex know who left the memory</li>
           <li><strong>Message</strong> is optional - feel free to share your thoughts or leave it blank</li>
-          <li><strong>Photo</strong> is optional - you can add a photo to your memory, or just share your message</li>
+          <li><strong>Photo</strong> is optional - you can add one photo per memory. Want to share more photos? You can submit multiple memories!</li>
         </ul>
       </Instructions>
       <Form onSubmit={handleSubmit}>
@@ -410,8 +410,8 @@ const PhotoUpload = ({ setRefreshTrigger, onSuccess }) => {
             <input {...getInputProps()} />
             <p>
               {isDragActive
-                ? "Drop your photo here"
-                : "Drag & drop a photo here, or click to select"}
+                ? "Drop your photo here (one photo at a time)"
+                : "Click here or drag & drop a photo (one photo at a time)"}
             </p>
           </DropZone>
           {preview && (
