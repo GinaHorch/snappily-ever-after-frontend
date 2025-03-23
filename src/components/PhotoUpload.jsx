@@ -294,15 +294,19 @@ const PhotoUpload = ({ setRefreshTrigger, onSuccess }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const onDrop = useCallback((acceptedFiles) => {
+    if (acceptedFiles.length > 1) {
+      setError("Please select only one photo at a time. You can add more memories by submitting them separately.");
+      return;
+    }
+    
     const file = acceptedFiles[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        // 5MB limit
-        setError("Image size should be less than 5MB");
-        return;
-      }
       setImage(file);
-      setPreview(URL.createObjectURL(file));
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
       setError("");
     }
   }, []);
@@ -312,24 +316,20 @@ const PhotoUpload = ({ setRefreshTrigger, onSuccess }) => {
     accept: {
       "image/*": [".jpeg", ".jpg", ".png", ".gif"],
     },
-    maxFiles: 1,
+    maxFiles: 1
   });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
-    // Input validation
+    // Input validation - only require name
     if (!guestName.trim()) {
       setError("Please enter your name");
       return;
     }
-    if (!message.trim() && !image) {
-      setError("Please add either a message or a photo");
-      return;
-    }
 
     setIsSubmitting(true);
-    setError("");
 
     try {
       // Upload image & message
@@ -337,38 +337,35 @@ const PhotoUpload = ({ setRefreshTrigger, onSuccess }) => {
         imageFile: image || null,
         comment: message,
         name: guestName,
-    });
+      });
 
-      console.log("Upload successful:", response); // ✅ Debugging step
+      console.log("Upload successful:", response);
 
-      // ✅ Trigger GalleryGrid update if onSuccess exists
-      if (onSuccess) {
-        console.log("Triggering onSuccess callback...");
-        onSuccess(response);
-      }
-
-      // ✅ Trigger refresh in GalleryGrid
-      setRefreshTrigger((prev) => {
-        console.log("Toggling refreshTrigger. Previous:", prev, "New:", !prev); // ✅ Step 6: Debug state update
-        return !prev;
-    });
-    
-      // ✅ Show success message
+      // Show success message
       setSuccessMessage("Your memory has been shared successfully! 🎉");
+      
       // Reset form
       setGuestName("");
       setMessage("");
       setImage(null);
-      setPreview("");
+      setPreview(null);
 
-      // ✅ Hide success message after a few seconds
-      setTimeout(() => setSuccessMessage(""), 4000);
-
+      // Single refresh trigger
+      if (setRefreshTrigger) {
+        console.log("Triggering refresh after successful upload");
+        setRefreshTrigger(prev => !prev);
+      }
+      
+      // Call success callback if provided
+      if (onSuccess) {
+        console.log("Calling onSuccess callback");
+        onSuccess(response);
+      }
     } catch (err) {
-        console.error("Upload error:", err); // Debugging step
-        setError(err.error || "Failed to upload. Please try again.");
+      console.error("Upload error:", err);
+      setError(err.response?.data?.message || "Failed to upload memory. Please try again.");
     } finally {
-        setIsSubmitting(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -379,46 +376,37 @@ const PhotoUpload = ({ setRefreshTrigger, onSuccess }) => {
         <ul>
           <li><strong>Your Name</strong> is required - this helps Katie and Alex know who left the memory</li>
           <li><strong>Message</strong> is optional - feel free to share your thoughts or leave it blank</li>
-          <li><strong>Photo</strong> - you can upload one photo per memory, but feel free to submit multiple memories</li>
+          <li><strong>Photo</strong> is optional - you can add one photo per memory. Want to share more photos? You can submit multiple memories!</li>
         </ul>
       </Instructions>
       <Form onSubmit={handleSubmit}>
         <FormSection>
-          <h3>Your Details</h3>
           <Input
             type="text"
             placeholder="Your Name"
             value={guestName}
             onChange={(e) => setGuestName(e.target.value)}
             required
-            disabled={isSubmitting}
           />
         </FormSection>
 
         <FormSection>
-          <h3>Your Message</h3>
           <TextArea
-            placeholder="Write your message here..."
+            placeholder="Share your memory (optional)"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            disabled={isSubmitting}
           />
         </FormSection>
 
         <FormSection>
-          <h3>Add a Photo</h3>
-          <DropZone
-            {...getRootProps()}
-            style={{ opacity: isSubmitting ? 0.5 : 1 }}
-          >
-            <input {...getInputProps()} disabled={isSubmitting} />
-            {isDragActive ? (
-              <p>Drop your photo here...</p>
-            ) : (
-              <p>Tap here to add a photo</p>
-            )}
+          <DropZone {...getRootProps()}>
+            <input {...getInputProps()} />
+            <p>
+              {isDragActive
+                ? "Drop your photo here (one photo at a time)"
+                : "Click here or drag & drop a photo (one photo at a time)"}
+            </p>
           </DropZone>
-
           {preview && (
             <PreviewContainer>
               <Preview src={preview} alt="Preview" />

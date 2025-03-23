@@ -228,39 +228,32 @@ const GalleryGrid = ({ refreshTrigger }) => {
 
   return (
    <Grid>
-      {submissions.map((submission) => (
+      {submissions
+        .filter(submission => submission.image && !submission.image.includes('placeholder'))
+        .map((submission) => (
         <Card key={submission.id}>
           {isAdmin && (
             <DeleteButton onClick={() => handleDelete(submission.id)}>
               Delete
             </DeleteButton>
           )}
-          {submission.image && (
-            <ImageContainer>
-              <Image 
-                src={submission.image} 
-                alt={`Photo by ${submission.name}`} 
-              />
-              {isAdmin && (
-                <ImageOverlay className="overlay">
-                  <DownloadButton
-                    onClick={() => handleDownload(submission)}
-                  >
-                    Download Photo
-                  </DownloadButton>
-                </ImageOverlay>
-              )}
-            </ImageContainer>
-          )}
-            <Timestamp>
-              {new Date(submission.uploaded_at).toLocaleDateString('en-AU', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-              })}
-            </Timestamp>
+          <ImageContainer>
+            <Image 
+              src={submission.image} 
+              alt={`Photo by ${submission.name}`} 
+            />
+            {isAdmin && (
+              <ImageOverlay className="overlay">
+                <DownloadButton
+                  onClick={() => handleDownload(submission)}
+                >
+                  Download Photo
+                </DownloadButton>
+              </ImageOverlay>
+            )}
+          </ImageContainer>
+          <GuestName>{submission.name}</GuestName>
+          <Timestamp>{new Date(submission.uploaded_at).toLocaleDateString()}</Timestamp>
         </Card>
       ))}
     </Grid>
