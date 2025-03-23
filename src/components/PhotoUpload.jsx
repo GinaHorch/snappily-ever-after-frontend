@@ -294,15 +294,19 @@ const PhotoUpload = ({ setRefreshTrigger, onSuccess }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const onDrop = useCallback((acceptedFiles) => {
+    if (acceptedFiles.length > 1) {
+      setError("Please select only one photo at a time");
+      return;
+    }
+    
     const file = acceptedFiles[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        // 5MB limit
-        setError("Image size should be less than 5MB");
-        return;
-      }
       setImage(file);
-      setPreview(URL.createObjectURL(file));
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
       setError("");
     }
   }, []);
@@ -312,24 +316,20 @@ const PhotoUpload = ({ setRefreshTrigger, onSuccess }) => {
     accept: {
       "image/*": [".jpeg", ".jpg", ".png", ".gif"],
     },
-    maxFiles: 1,
+    maxFiles: 1
   });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
-    // Input validation
+    // Input validation - only require name
     if (!guestName.trim()) {
       setError("Please enter your name");
       return;
     }
-    if (!message.trim() && !image) {
-      setError("Please add either a message or a photo");
-      return;
-    }
 
     setIsSubmitting(true);
-    setError("");
 
     try {
       // Upload image & message
@@ -359,16 +359,20 @@ const PhotoUpload = ({ setRefreshTrigger, onSuccess }) => {
       setGuestName("");
       setMessage("");
       setImage(null);
-      setPreview("");
+      setPreview(null);
 
-      // ✅ Hide success message after a few seconds
-      setTimeout(() => setSuccessMessage(""), 4000);
-
+      // Trigger refresh
+      setRefreshTrigger(prev => !prev);
+      
+      // Call success callback if provided
+      if (onSuccess) {
+        onSuccess(response);
+      }
     } catch (err) {
-        console.error("Upload error:", err); // Debugging step
-        setError(err.error || "Failed to upload. Please try again.");
+      console.error("Upload error:", err);
+      setError(err.response?.data?.message || "Failed to upload memory. Please try again.");
     } finally {
-        setIsSubmitting(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -379,46 +383,37 @@ const PhotoUpload = ({ setRefreshTrigger, onSuccess }) => {
         <ul>
           <li><strong>Your Name</strong> is required - this helps Katie and Alex know who left the memory</li>
           <li><strong>Message</strong> is optional - feel free to share your thoughts or leave it blank</li>
-          <li><strong>Photo</strong> - you can upload one photo per memory, but feel free to submit multiple memories</li>
+          <li><strong>Photo</strong> is optional - you can add a photo to your memory, or just share your message</li>
         </ul>
       </Instructions>
       <Form onSubmit={handleSubmit}>
         <FormSection>
-          <h3>Your Details</h3>
           <Input
             type="text"
             placeholder="Your Name"
             value={guestName}
             onChange={(e) => setGuestName(e.target.value)}
             required
-            disabled={isSubmitting}
           />
         </FormSection>
 
         <FormSection>
-          <h3>Your Message</h3>
           <TextArea
-            placeholder="Write your message here..."
+            placeholder="Share your memory (optional)"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            disabled={isSubmitting}
           />
         </FormSection>
 
         <FormSection>
-          <h3>Add a Photo</h3>
-          <DropZone
-            {...getRootProps()}
-            style={{ opacity: isSubmitting ? 0.5 : 1 }}
-          >
-            <input {...getInputProps()} disabled={isSubmitting} />
-            {isDragActive ? (
-              <p>Drop your photo here...</p>
-            ) : (
-              <p>Tap here to add a photo</p>
-            )}
+          <DropZone {...getRootProps()}>
+            <input {...getInputProps()} />
+            <p>
+              {isDragActive
+                ? "Drop your photo here"
+                : "Drag & drop a photo here, or click to select"}
+            </p>
           </DropZone>
-
           {preview && (
             <PreviewContainer>
               <Preview src={preview} alt="Preview" />
