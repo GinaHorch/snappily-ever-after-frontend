@@ -5,8 +5,8 @@ import { authService } from '../services/auth';
 import PhotoUpload from './PhotoUpload';
 
 const Grid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: 20px;
   width: 100%;
   height: 100%;
@@ -23,11 +23,15 @@ const Card = styled.div`
   flex-direction: column;
   gap: 10px;
   position: relative;
+  max-width: 500px;
+  margin: 0 auto;
+  width: 100%;
 `;
 
 const ImageContainer = styled.div`
   position: relative;
   cursor: pointer;
+  width: 100%;
   
   &:hover {
     .overlay {
@@ -38,8 +42,9 @@ const ImageContainer = styled.div`
 
 const Image = styled.img`
   width: 100%;
-  height: 200px;
-  object-fit: cover;
+  height: auto;
+  max-height: 400px;
+  object-fit: contain;
   border-radius: 6px;
 `;
 
