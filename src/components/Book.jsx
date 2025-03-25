@@ -572,10 +572,9 @@ const Book = ({ onLogin }) => {
   // Add a constant for fixed pages (excluding dynamic submission pages)
   const FIXED_PAGES = {
     FRONT_COVER: 0,
-    SHARE_MEMORY: 1,
-    GALLERY_GRID: 2,
-    FINAL_MESSAGE: 3,
-    BACK_COVER: 4
+    GALLERY_GRID: 1,
+    FINAL_MESSAGE: 2,
+    BACK_COVER: 3
   };
 
   const totalPages = submissions.length + Object.keys(FIXED_PAGES).length;
@@ -824,7 +823,7 @@ const Book = ({ onLogin }) => {
               </Page>
             </div>
 
-            {/* Share Memory Page */}
+            {/* Share Memory Page
             <div className="page">
               <Page number="1">
                 <PageContent $isAuthenticated={isAuthenticated}>
@@ -837,12 +836,12 @@ const Book = ({ onLogin }) => {
                   <PhotoUpload setRefreshTrigger={setRefreshTrigger} onSuccess={handleImageUploadSuccess} />
                 </PageContent>
               </Page>
-            </div>
+            </div> */}
 
             {/* Memory Pages */}
             {submissions.map((submission, index) => (
               <div className="page" key={`memory-${submission.id}`}>
-                <Page number={index + 2}>
+                <Page number={index + 1}>
                   <MemoryPageContent 
                     $isAuthenticated={isAuthenticated}
                     $textOnly={!submission.image || submission.image.includes('placeholder')}
@@ -878,7 +877,7 @@ const Book = ({ onLogin }) => {
 
             {/* Gallery Grid Page */}
             <div className="page">
-              <Page number={submissions.length + 2}>
+              <Page number={submissions.length + 1}>
                 <PageContent $isAuthenticated={isAuthenticated}>
                   <CameraIcon
                     src="/images/cameraheart-icon.svg"
@@ -893,7 +892,7 @@ const Book = ({ onLogin }) => {
 
             {/* Final Message Page */}
             <div className="page">
-              <Page number={submissions.length + 3}>
+              <Page number={submissions.length + 2}>
                 <PageContent $isAuthenticated={isAuthenticated}>
                   <ThankfulIcon
                     src="/images/thankful-icon.svg"
