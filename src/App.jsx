@@ -33,9 +33,13 @@ const AdminLinkContainer = styled.div`
   top: 20px;
   right: 20px;
   z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 
   @media (max-width: 768px) {
-    right: 10px;
+    top: 15px;
+    right: 15px;
   }
 
   @media (max-width: 480px) {
@@ -51,12 +55,13 @@ const AdminLink = styled(Link)`
   text-decoration: none;
   border-radius: 8px;
   font-family: "Lato", sans-serif;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
   font-size: 14px;
-  display: block;
-  width: auto;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
   @media (max-width: 480px) {
     padding: 6px 12px;
@@ -66,6 +71,13 @@ const AdminLink = styled(Link)`
   &:hover {
     background-color: #1e4a2a;
     color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  &::before {
+    content: "👑";
+    font-size: 16px;
   }
 `;
 
@@ -106,8 +118,13 @@ function AppContent() {
 
   useEffect(() => {
     checkAuth();
+    // Check auth status more frequently
+    const interval = setInterval(checkAuth, 1000);
     window.addEventListener('storage', checkAuth);
-    return () => window.removeEventListener('storage', checkAuth);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('storage', checkAuth);
+    };
   }, []);
 
   const handleLogin = () => {
