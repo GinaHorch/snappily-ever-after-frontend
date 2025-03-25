@@ -10,78 +10,47 @@ import { Link, useNavigate } from "react-router-dom";
 
 const BookContainer = styled.div`
   width: 100%;
-  height: calc(100vh - 60px);
+  height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 20px;
+  padding: 0;
   margin: 0;
   position: relative;
   overflow: hidden;
 
   .demo-book {
     width: 100% !important;
-    max-width: 320px !important;
+    height: 100% !important;
+    max-width: none !important;
     margin: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
+    padding: 10px !important;
     position: relative !important;
-
-    @media (max-width: 320px) {
-      padding: 0 !important;
-      margin: 0 !important;
-      left: 0 !important;
-      right: 0 !important;
-      max-width: 100% !important;
-    }
-
-    @media (min-width: 375px) and (max-width: 411px) {
-      max-width: 355px !important;
-      margin: 0 auto !important;
-      padding: 0 10px !important;
-    }
-
-    @media (min-width: 412px) and (max-width: 599px) {
-      max-width: 392px !important;
-      margin: 0 auto !important;
-      padding: 0 !important;
-      left: 50% !important;
-      transform: translateX(-50%) !important;
-    }
-
-    @media (min-width: 600px) and (max-width: 768px) {
-      max-width: 550px !important;
-      margin: 0 auto !important;
-      padding: 0 !important;
-      left: 50% !important;
-      transform: translateX(-50%) !important;
-    }
 
     @media (min-width: 769px) {
       max-width: 1400px !important;
+      height: calc(100vh - 100px) !important;
+      padding: 20px !important;
     }
   }
 
-  @media (max-width: 320px) {
-    padding: 0;
-  }
-
-  @media (min-width: 375px) and (max-width: 411px) {
-    padding: 10px;
-    height: calc(100vh - 40px);
-  }
-
-  @media (min-width: 412px) and (max-width: 599px) {
-    padding: 0;
-    height: calc(100vh - 40px);
+  .book-wrapper {
+    width: calc(100% - 20px);
+    height: calc(100vh - 100px); /* Increased space for navigation */
+    display: flex;
     justify-content: center;
-  }
+    align-items: center;
+    margin: 10px;
+    max-height: 800px; /* Maximum height for larger phones */
 
-  @media (min-width: 600px) and (max-width: 768px) {
-    padding: 0;
-    height: calc(100vh - 40px);
-    justify-content: center;
+    @media (max-height: 700px) {
+      height: calc(100vh - 80px);
+    }
+
+    @media (max-height: 600px) {
+      height: calc(100vh - 60px);
+    }
   }
 `;
 
@@ -226,20 +195,6 @@ const PageNumber = styled.div`
   text-align: center;
 `;
 
-const TurnPageHint = styled.div`
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: rgba(44, 62, 80, 0.8);
-  color: white;
-  padding: 10px 15px;
-  border-radius: 8px;
-  font-size: 0.9em;
-  opacity: ${(props) => (props.$show ? 1 : 0)};
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-`;
-
 const NavigationButtons = styled.div`
   position: fixed;
   bottom: 0;
@@ -247,16 +202,18 @@ const NavigationButtons = styled.div`
   right: 0;
   display: flex;
   flex-direction: row;
-  gap: 20px;
+  gap: 8px;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   background: linear-gradient(to top, rgba(255,255,255,1) 0%, rgba(255,255,255,0.95) 70%, rgba(255,255,255,0) 100%);
-  padding: 10px;
-  height: 60px;
+  padding: 8px 12px;
+  height: 56px;
 
-  @media (max-width: 480px) {
-    gap: 10px;
+  @media (min-width: 769px) {
+    gap: 20px;
+    padding: 15px;
+    height: 60px;
   }
 `;
 
@@ -264,16 +221,23 @@ const NavButton = styled.button`
   background: rgba(46, 111, 64, 0.9);
   color: white;
   border: none;
-  padding: 8px 15px;
+  padding: 8px;
   border-radius: 8px;
   cursor: pointer;
   font-family: "Lato", sans-serif;
   white-space: nowrap;
   flex: 1;
-  max-width: 120px;
-  min-height: 35px;
-  font-size: 13px;
+  max-width: 100px;
+  min-height: 40px;
+  font-size: 12px;
+  font-weight: 600;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  position: relative;
+  transition: all 0.2s ease-in-out;
 
   &:hover {
     background: rgba(46, 111, 64, 1);
@@ -284,6 +248,26 @@ const NavButton = styled.button`
     cursor: not-allowed;
   }
 
+  &[data-direction="prev"] {
+    &:hover::before {
+      content: "←";
+      position: absolute;
+      left: 8px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+  }
+
+  &[data-direction="next"] {
+    &:hover::after {
+      content: "→";
+      position: absolute;
+      right: 8px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+  }
+
   @media (min-width: 769px) {
     padding: 10px 20px;
     font-size: 14px;
@@ -291,19 +275,50 @@ const NavButton = styled.button`
   }
 
   @media (max-width: 360px) {
-    max-width: 80px;
-    padding: 8px 10px;
+    max-width: 70px;
+    padding: 8px;
+    font-size: 11px;
     
     &[data-direction="prev"]::before {
       content: "←";
+      margin-right: 2px;
+      font-size: 16px;
+      font-weight: bold;
     }
     
     &[data-direction="next"]::before {
       content: "→";
+      margin-left: 2px;
+      font-size: 16px;
+      font-weight: bold;
     }
     
     span {
       display: none;
+    }
+  }
+
+  /* Middle button (Share Memory) specific styles */
+  &:nth-child(2) {
+    background:rgba(46, 111, 64, 0.9);
+    max-width: 120px;
+    
+    &:hover {
+      background: #8a9c78;
+      &::after {
+        content: "";
+        position: absolute;
+        right: 8px;
+        width: 18px;
+        height: 18px;
+        background: url('/images/cameraheart-icon.svg') no-repeat center;
+        background-size: contain;
+        filter: brightness(0) invert(1);
+      }
+    }
+    
+    @media (max-width: 360px) {
+      max-width: 90px;
     }
   }
 `;
@@ -347,7 +362,7 @@ const PageContainer = styled.div.attrs(props => ({
   box-shadow: inset -7px 0 30px -7px rgba(0, 0, 0, 0.4);
   height: 100%;
   width: 100%;
-  padding: 0.3cm;
+  padding: 15px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -356,7 +371,7 @@ const PageContainer = styled.div.attrs(props => ({
   overflow: hidden;
 
   @media (min-width: 769px) {
-    padding: 0.5cm;
+    padding: 30px;
   }
 
   &::before {
@@ -786,27 +801,27 @@ const Book = ({ onLogin }) => {
           <HTMLFlipBook
             key={`book-${isAuthenticated}-${loading}-${submissions.length}`}
             ref={bookRef}
-            width={dimensions.width}
-            height={dimensions.height}
+            width={window.innerWidth - 40}
+            height={Math.min(window.innerHeight - 100, 800)} // Cap maximum height
             size="stretch"
-            minWidth={280}
-            maxWidth={dimensions.width}
-            minHeight={400}
-            maxHeight={dimensions.height}
+            minWidth={window.innerWidth - 40}
+            maxWidth={window.innerWidth - 40}
+            minHeight={Math.min(window.innerHeight - 100, 800)}
+            maxHeight={Math.min(window.innerHeight - 100, 800)}
             maxShadowOpacity={0.5}
             showCover={true}
-            mobileScrollSupport={isAuthenticated}
+            mobileScrollSupport={true}
             className="demo-book"
-            disabled={!isAuthenticated}
             flippingTime={1000}
-            useMouseEvents={false}
-            swipeDistance={0}
+            useMouseEvents={!isMobile}
+            swipeDistance={30}
             clickEventForward={false}
-            usePortrait={isMobile}
+            usePortrait={true}
             startPage={0}
             onFlip={onFlip}
             drawShadow={true}
             autoSize={true}
+            style={{ touchAction: 'none' }}
           >
             {/* Cover Page */}
             <div className="page">
@@ -923,31 +938,19 @@ const Book = ({ onLogin }) => {
                 disabled={page === 0}
                 data-direction="prev"
               >
-                <span>← Previous Page</span>
+                <span>Previous</span>
               </NavButton>
               <NavButton 
-                onClick={() => navigate('/')}  
-                style={{ 
-                  backgroundColor: '#9daf89',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '8px 15px'
-                }}
+                onClick={() => navigate('/')}
               >
-                <img 
-                  src="/images/cameraheart-icon.svg" 
-                  alt="Camera" 
-                  style={{ width: '20px', height: '20px' }}
-                />
-                <span>Share a Memory</span>
+                <span>Share Memory</span>
               </NavButton>
               <NavButton 
                 onClick={nextPage} 
                 disabled={page === totalPages - 1}
                 data-direction="next"
               >
-                <span>Next Page →</span>
+                <span>Next</span>
               </NavButton>
             </NavigationButtons>
           )}
