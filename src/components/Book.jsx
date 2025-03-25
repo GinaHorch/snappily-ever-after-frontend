@@ -334,11 +334,9 @@ const ThankfulIcon = styled.img`
 `;
 
 const MessageIcon = styled.img`
-  width: 67px;
-  height: 67px;
-  margin-top: 3px;
-  margin-bottom: 0px;
-  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  opacity: 0.8;
 `;
 
 const PageContainer = styled.div.attrs(props => ({
@@ -482,7 +480,7 @@ const MemoryPageContent = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: ${props => props.$textOnly ? 'center' : 'flex-start'};
     padding: 20px;
     overflow-y: auto;
 
@@ -502,12 +500,35 @@ const MemoryImage = styled.img`
 
 const MemoryMessage = styled.p`
   font-family: "Playfair Display", serif;
-  font-size: 1.1em;
+  font-size: ${props => props.$textOnly ? '1.3em' : '1.1em'};
   line-height: 1.6;
   color: #2c3e50;
   text-align: center;
-  margin: 15px 0;
-  font-style: italic;
+  margin: ${props => props.$textOnly ? '30px 0' : '15px 0'};
+  font-style: ${props => props.$textOnly ? 'normal' : 'italic'};
+  max-width: 80%;
+`;
+
+const TextOnlyDecoration = styled.div`
+  margin: 20px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  
+  &::before, &::after {
+    content: "";
+    flex: 1;
+    border-bottom: 2px solid rgba(46, 111, 64, 0.2);
+  }
+  
+  &::before {
+    margin-right: 20px;
+  }
+  
+  &::after {
+    margin-left: 20px;
+  }
 `;
 
 const MemoryFooter = styled.div`
@@ -654,35 +675,52 @@ const Book = ({ onLogin }) => {
 
   // ✅ Define image upload success handler here
   const handleImageUploadSuccess = (newImage) => {
-    console.log("New image received:", newImage); // ✅ Debugging step
-    setRefreshTrigger((prev) => !prev); // ✅ Trigger gallery refresh
+    console.log("New image received:", newImage);
+    fetchSubmissions(); // Directly fetch submissions instead of using refreshTrigger
   };
 
   useEffect(() => {
-  if (isAuthenticated) {
-    console.log("Fetching submissions via useEffect...");
-    fetchSubmissions();
-  }
-}, [refreshTrigger, isAuthenticated]); // Add isAuthenticated to dependencies
-  
+    if (isAuthenticated) {
+      console.log("Fetching submissions via useEffect...");
+      fetchSubmissions();
+    }
+  }, [refreshTrigger, isAuthenticated]);
+
   const fetchSubmissions = async () => {
-  if (!isAuthenticated) {
-    return; // Don't attempt to fetch if not authenticated
-  }
+    if (!isAuthenticated) {
+      return;
+    }
 
     try {
       setLoading(true);
-      const data = await galleryService.getAllImages();  // Fetch from backend
+      const data = await galleryService.getAllImages();
       console.log("Fetched submissions Book.jsx:", data);
-      setSubmissions(data);  // Store the images/messages
+      setSubmissions(data);
       setError(null);
     } catch (err) {
       console.error("Error fetching submissions:", err);
+      if (err.response?.status === 401) {
+        // If unauthorized, refresh the token instead of logging out
+        try {
+          const token = localStorage.getItem('token');
+          if (token) {
+            // Re-authenticate silently
+            await authService.refreshToken();
+            // Retry fetching submissions
+            const data = await galleryService.getAllImages();
+            setSubmissions(data);
+            setError(null);
+            return;
+          }
+        } catch (refreshError) {
+          console.error("Token refresh failed:", refreshError);
+        }
+      }
       setError("Failed to load images. Please try again.");
     } finally {
       setLoading(false);
     }
-  };  
+  };
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -812,10 +850,30 @@ const Book = ({ onLogin }) => {
             {submissions.map((submission, index) => (
               <div className="page" key={`memory-${submission.id}`}>
                 <Page number={index + 2}>
-                  <MemoryPageContent $isAuthenticated={isAuthenticated}>
+                  <MemoryPageContent 
+                    $isAuthenticated={isAuthenticated}
+                    $textOnly={!submission.image || submission.image.includes('placeholder')}
+                  >
                     <PageTitle $isCover={false}>A Snap in Time</PageTitle>
-                    <MemoryImage src={submission.image} alt={`Memory from ${submission.name}`} />
-                    <MemoryMessage>{submission.comment || "Captured a beautiful moment!"}</MemoryMessage>
+                    
+                    {submission.image && !submission.image.includes('placeholder') ? (
+                      <>
+                        <MemoryImage src={submission.image} alt={`Memory from ${submission.name}`} />
+                        <MemoryMessage>
+                          {submission.comment || "Captured a beautiful moment!"}
+                        </MemoryMessage>
+                      </>
+                    ) : (
+                      <>
+                        <TextOnlyDecoration>
+                          <MessageIcon src="/images/message-icon.svg" alt="Message" />
+                        </TextOnlyDecoration>
+                        <MemoryMessage $textOnly>
+                          {submission.comment}
+                        </MemoryMessage>
+                      </>
+                    )}
+                    
                     <MemoryFooter>
                       <GuestName>{submission.name}</GuestName>
                       <DateStamp>{new Date(submission.uploaded_at).toLocaleDateString()}</DateStamp>
