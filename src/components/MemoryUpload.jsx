@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import { galleryService } from '../services/gallery';
 import LoginForm from './LoginForm';
 import { authService } from '../services/auth';
+import Confetti from 'react-confetti';
 
 const PageContainer = styled.div`
   min-height: 100vh;
@@ -16,6 +17,7 @@ const PageContainer = styled.div`
   justify-content: flex-start;
   padding: 20px;
   position: relative;
+  overflow: hidden;
 `;
 
 const ContentContainer = styled.div`
@@ -25,7 +27,21 @@ const ContentContainer = styled.div`
   border-radius: 12px;
   padding: 30px;
   margin-top: 20px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+`;
+
+const HeaderIcon = styled.img`
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 15px;
+  display: block;
+  filter: brightness(0) invert(1);
+  opacity: 0.95;
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: scale(1.05);
+  }
 `;
 
 const Title = styled.h1`
@@ -66,7 +82,7 @@ const Input = styled.input`
   border: 2px solid #2e6f40;
   border-radius: 8px;
   font-size: 16px;
-  font-family: "Lato", sans-serif;
+  font-family: "Parisienne", sans-serif;
   transition: border-color 0.3s ease;
 
   &:focus {
@@ -81,7 +97,7 @@ const TextArea = styled.textarea`
   border: 2px solid #2e6f40;
   border-radius: 8px;
   font-size: 16px;
-  font-family: "Lato", sans-serif;
+  font-family: "Parisienne", sans-serif;
   min-height: 100px;
   resize: vertical;
   transition: border-color 0.3s ease;
@@ -93,16 +109,47 @@ const TextArea = styled.textarea`
 `;
 
 const DropZone = styled.div`
-  border: 2px dashed ${props => props.$isDragActive ? '#2e6f40' : '#95a5a6'};
+  border: 2px solid #2e6f40;
   border-radius: 8px;
   padding: 20px;
   text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  background: ${props => props.$isDragActive ? 'rgba(46, 111, 64, 0.1)' : 'transparent'};
+  background: white;
+  position: relative;
+  font-family: "Parisienne", sans-serif;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(46, 111, 64, 0);
+    transition: all 0.3s ease;
+    pointer-events: none;
+    border-radius: 6px;
+  }
 
-  &:hover {
-    border-color: #2e6f40;
+  &:hover::before {
+    background: rgba(46, 111, 64, 0.05);
+  }
+  
+  ${props => props.$isDragActive && `
+    border-style: dashed;
+    border-color: #34495e;
+    
+    &::before {
+      background: rgba(46, 111, 64, 0.1);
+    }
+  `}
+
+  p {
+    color: #2c3e50;
+    margin: 0;
+    position: relative;
+    z-index: 1;
   }
 `;
 
@@ -126,7 +173,7 @@ const Button = styled.button`
   transition: background-color 0.3s ease;
 
   &:hover {
-    background-color: #34495e;
+    background-color: #1e4a2a;
   }
 
   &:disabled {
@@ -141,10 +188,28 @@ const ErrorMessage = styled.p`
   margin-top: 10px;
 `;
 
-const SuccessMessage = styled.p`
-  color: #2e6f40;
-  font-size: 14px;
-  margin-top: 10px;
+const SuccessMessage = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  text-align: center;
+
+  img {
+    width: 30px;
+    height: 30px;
+  }
+
+  p {
+    color: #2e6f40;
+    font-size: 16px;
+    margin: 0;
+    font-family: "Parisienne", sans-serif;
+  }
 `;
 
 const ViewBookButton = styled(Button)`
@@ -157,7 +222,7 @@ const ViewBookButton = styled(Button)`
   padding: 8px 15px;
 
   &:hover {
-    background-color: #34495e;
+    background-color: #1e4a2a;
   }
 `;
 
@@ -166,7 +231,7 @@ const Instructions = styled.div`
   border-radius: 8px;
   padding: 20px;
   margin-bottom: 20px;
-  font-family: "Lato", sans-serif;
+  font-family: "Parisienne", sans-serif;
 
   strong {
     color: #2e6f40;
@@ -209,6 +274,23 @@ const MemoryUpload = () => {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [windowDimensions, setWindowDimensions] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight
+  });
+
+  // Add window resize handler
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowDimensions({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Add effect to check authentication on mount
   useEffect(() => {
@@ -252,6 +334,7 @@ const MemoryUpload = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSuccessMessage("");
 
     if (!guestName.trim()) {
       setError("Please enter your name");
@@ -263,23 +346,19 @@ const MemoryUpload = () => {
     try {
       const response = await galleryService.uploadImage({
         imageFile: image || null,
-        comment: message,
-        name: guestName,
+        comment: message.trim() || null,
+        name: guestName.trim(),
       });
 
       console.log("Upload successful:", response);
-      setSuccessMessage("Your memory has been shared successfully! 🎉");
+      setSuccessMessage("success");
       
       // Reset form
       setGuestName("");
       setMessage("");
       setImage(null);
       setPreview(null);
-
-      // Call success callback if provided
-      if (onSuccess) {
-        onSuccess(response);
-      }
+      
     } catch (err) {
       console.error("Upload error:", err);
       setError(err.response?.data?.message || "Failed to upload memory. Please try again.");
@@ -299,9 +378,31 @@ const MemoryUpload = () => {
 
   return (
     <PageContainer>
+      <Confetti
+        width={windowDimensions.width}
+        height={windowDimensions.height}
+        numberOfPieces={50}
+        confettiSource={{ x: 0, y: 0, w: windowDimensions.width, h: 0 }}
+        initialVelocityY={3}
+        gravity={0.1}
+        wind={0.01}
+        colors={['#9daf89', '#2e6f40', '#ffffff', '#e6e6fa', '#ffd700']}
+        recycle={true}
+        run={true}
+        tweenDuration={5000}
+        opacity={0.6}
+      />
       <ContentContainer>
-        <Title>Katie & Alex</Title>
-        <Subtitle>Share Your Memory</Subtitle>
+        <HeaderIcon 
+          src="/images/cameraheart-icon.svg" 
+          alt="Camera heart icon" 
+          onError={(e) => {
+            console.error('Failed to load camera heart icon');
+            e.target.style.display = 'none';
+          }}
+        />
+        <Title>Katie & Alex's Wedding Guest Book</Title>
+        <Subtitle>Share Your Memory to Fill the Book</Subtitle>
         <WeddingImage src="/images/cat_wedding.png" alt="Wedding cats" />
         
         {!isAuthenticated ? (
@@ -324,7 +425,13 @@ const MemoryUpload = () => {
                 onChange={(e) => setGuestName(e.target.value)}
                 required
               />
-              
+
+              <TextArea
+                placeholder="Share your memory (optional)"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+              />
+
               <DropZone {...getRootProps()} $isDragActive={isDragActive}>
                 <input {...getInputProps()} />
                 {preview ? (
@@ -333,12 +440,6 @@ const MemoryUpload = () => {
                   <p>Drag & drop your photo here, or click to select one photo at a time</p>
                 )}
               </DropZone>
-
-              <TextArea
-                placeholder="Share your memory (optional)"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-              />
 
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? "Sharing..." : "Share Memory"}
@@ -353,8 +454,13 @@ const MemoryUpload = () => {
                 <span>View Guest Book</span>
               </ViewBookButton>
 
+              {successMessage && (
+                <SuccessMessage>
+                  <img src="/images/thankful-icon.svg" alt="Thank you" />
+                  <p>Thank you for sharing your special memory!</p>
+                </SuccessMessage>
+              )}
               {error && <ErrorMessage>{error}</ErrorMessage>}
-              {successMessage && <SuccessMessage>{successMessage}</SuccessMessage>}
             </Form>
           </>
         )}
