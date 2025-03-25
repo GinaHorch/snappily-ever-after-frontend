@@ -3,11 +3,10 @@ import HTMLFlipBook from "react-pageflip";
 import styled from "styled-components";
 import Confetti from "react-confetti";
 import LoginForm from "./LoginForm";
-import PhotoUpload from "./PhotoUpload";
 import GalleryGrid from "./GalleryGrid";
 import { authService } from "../services/auth";
 import { galleryService } from "../services/gallery";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const BookContainer = styled.div`
   width: 100%;
@@ -553,6 +552,7 @@ const DateStamp = styled.span`
 `;
 
 const Book = ({ onLogin }) => {
+  const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(authService.isAuthenticated());
   const [isLoading, setIsLoading] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -563,11 +563,12 @@ const Book = ({ onLogin }) => {
   const [submissions, setSubmissions] = useState([]);
   const [showBook, setShowBook] = useState(true);
   const bookRef = useRef(null);
-  const containerRef = useRef(null);
   const [showHint, setShowHint] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const containerRef = useRef(null);
+
 
   // Add a constant for fixed pages (excluding dynamic submission pages)
   const FIXED_PAGES = {
@@ -823,21 +824,6 @@ const Book = ({ onLogin }) => {
               </Page>
             </div>
 
-            {/* Share Memory Page
-            <div className="page">
-              <Page number="1">
-                <PageContent $isAuthenticated={isAuthenticated}>
-                  <GuestbookIcon
-                    src="/images/guestbook-icon.svg"
-                    alt="Guestbook Icon"
-                    onClick={() => console.log("Guestbook Icon Clicked")}
-                  />
-                  <PageTitle $isCover={false}>Share Your Memory</PageTitle>
-                  <PhotoUpload setRefreshTrigger={setRefreshTrigger} onSuccess={handleImageUploadSuccess} />
-                </PageContent>
-              </Page>
-            </div> */}
-
             {/* Memory Pages */}
             {submissions.map((submission, index) => (
               <div className="page" key={`memory-${submission.id}`}>
@@ -938,6 +924,23 @@ const Book = ({ onLogin }) => {
                 data-direction="prev"
               >
                 <span>← Previous Page</span>
+              </NavButton>
+              <NavButton 
+                onClick={() => navigate('/')}  
+                style={{ 
+                  backgroundColor: '#9daf89',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 15px'
+                }}
+              >
+                <img 
+                  src="/images/cameraheart-icon.svg" 
+                  alt="Camera" 
+                  style={{ width: '20px', height: '20px' }}
+                />
+                <span>Share a Memory</span>
               </NavButton>
               <NavButton 
                 onClick={nextPage} 

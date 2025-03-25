@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -148,11 +148,16 @@ const SuccessMessage = styled.p`
 `;
 
 const ViewBookButton = styled(Button)`
-  background-color: #9daf89;
+  background-color: #2E6F40;
   margin-top: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 15px;
 
   &:hover {
-    background-color: #8a9b7a;
+    background-color: #34495e;
   }
 `;
 
@@ -194,9 +199,9 @@ const Instructions = styled.div`
   }
 `;
 
-const MemoryUpload = ({ onLogin, onSuccess }) => {
+const MemoryUpload = () => {
   const navigate = useNavigate();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(authService.isAuthenticated());
   const [guestName, setGuestName] = useState("");
   const [message, setMessage] = useState("");
   const [image, setImage] = useState(null);
@@ -204,6 +209,19 @@ const MemoryUpload = ({ onLogin, onSuccess }) => {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Add effect to check authentication on mount
+  useEffect(() => {
+    const checkAuth = () => {
+      const isAuthed = authService.isAuthenticated();
+      setIsAuthenticated(isAuthed);
+    };
+    
+    checkAuth();
+    // Set up an interval to check auth status periodically
+    const interval = setInterval(checkAuth, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const onDrop = useCallback((acceptedFiles) => {
     if (acceptedFiles.length > 1) {
@@ -327,7 +345,12 @@ const MemoryUpload = ({ onLogin, onSuccess }) => {
               </Button>
 
               <ViewBookButton type="button" onClick={() => navigate('/book')}>
-                View Guest Book
+                <img 
+                  src="/images/guestbook-icon.svg" 
+                  alt="Guestbook" 
+                  style={{ width: '20px', height: '20px' }}
+                />
+                <span>View Guest Book</span>
               </ViewBookButton>
 
               {error && <ErrorMessage>{error}</ErrorMessage>}
