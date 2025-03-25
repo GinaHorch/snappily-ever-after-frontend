@@ -64,7 +64,7 @@ const AdminLink = styled(Link)`
   }
 
   &:hover {
-    background-color: #9daf89;
+    background-color: #1e4a2a;
     color: white;
   }
 `;

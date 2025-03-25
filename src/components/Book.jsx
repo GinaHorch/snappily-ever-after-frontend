@@ -25,7 +25,7 @@ const BookContainer = styled.div`
     height: 100% !important;
     max-width: none !important;
     margin: 0 !important;
-    padding: 10px !important;
+    padding: 15px !important;
     position: relative !important;
 
     @media (min-width: 769px) {
@@ -36,13 +36,13 @@ const BookContainer = styled.div`
   }
 
   .book-wrapper {
-    width: calc(100% - 20px);
-    height: calc(100vh - 100px); /* Increased space for navigation */
+    width: 100%;
+    height: calc(100vh - 100px);
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 10px;
-    max-height: 800px; /* Maximum height for larger phones */
+    padding: 0 15px;
+    max-height: 800px;
 
     @media (max-height: 700px) {
       height: calc(100vh - 80px);
@@ -300,11 +300,11 @@ const NavButton = styled.button`
 
   /* Middle button (Share Memory) specific styles */
   &:nth-child(2) {
-    background:rgba(46, 111, 64, 0.9);
+    background: rgba(46, 111, 64, 0.9);
     max-width: 120px;
     
     &:hover {
-      background: #8a9c78;
+      background: rgba(46, 111, 64, 1);
       &::after {
         content: "";
         position: absolute;
@@ -801,11 +801,11 @@ const Book = ({ onLogin }) => {
           <HTMLFlipBook
             key={`book-${isAuthenticated}-${loading}-${submissions.length}`}
             ref={bookRef}
-            width={window.innerWidth - 40}
-            height={Math.min(window.innerHeight - 100, 800)} // Cap maximum height
+            width={Math.min(window.innerWidth - 60, 600)} // Added maximum width and increased padding
+            height={Math.min(window.innerHeight - 100, 800)}
             size="stretch"
-            minWidth={window.innerWidth - 40}
-            maxWidth={window.innerWidth - 40}
+            minWidth={Math.min(window.innerWidth - 60, 600)}
+            maxWidth={Math.min(window.innerWidth - 60, 600)}
             minHeight={Math.min(window.innerHeight - 100, 800)}
             maxHeight={Math.min(window.innerHeight - 100, 800)}
             maxShadowOpacity={0.5}
