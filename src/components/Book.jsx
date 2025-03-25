@@ -553,7 +553,7 @@ const DateStamp = styled.span`
 `;
 
 const Book = ({ onLogin }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(authService.isAuthenticated());
   const [isLoading, setIsLoading] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(false);
@@ -638,13 +638,6 @@ const Book = ({ onLogin }) => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-
-  // Immediately check auth status on mount
-  useEffect(() => {
-    if (isAuthenticated) {
-      setRefreshTrigger(prev => !prev);
-    }
-  }, [isAuthenticated]);
 
   const handleLogin = async () => {
     try {

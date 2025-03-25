@@ -9,6 +9,7 @@ import {
 import Book from "./components/Book";
 import AdminDashboard from "./components/AdminDashboard";
 import LoginForm from "./components/LoginForm";
+import MemoryUpload from "./components/MemoryUpload";
 import styled from "styled-components";
 import { useState, useEffect } from "react";
 import { authService } from "./services/auth";
@@ -150,7 +151,8 @@ function AppContent() {
       )}
 
       <Routes>
-        <Route path="/" element={<Book onLogin={handleLogin} />} />
+        <Route path="/" element={<MemoryUpload onLogin={handleLogin} />} />
+        <Route path="/book" element={<Book onLogin={handleLogin} />} />
         <Route
           path="/admin"
           element={
