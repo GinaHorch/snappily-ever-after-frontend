@@ -41,7 +41,7 @@ const Button = styled.button`
   transition: background-color 0.3s ease;
 
   &:hover {
-    background-color: #34495e;
+    background-color: #1e4a2a;
   }
 
   &:disabled {
@@ -61,7 +61,7 @@ const AdminButton = styled.button`
   padding: 5px;
 
   &:hover {
-    color: #34495e;
+    color: #1e4a2a;
   }
 `;
 

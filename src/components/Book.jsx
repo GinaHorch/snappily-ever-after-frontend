@@ -3,86 +3,54 @@ import HTMLFlipBook from "react-pageflip";
 import styled from "styled-components";
 import Confetti from "react-confetti";
 import LoginForm from "./LoginForm";
-import PhotoUpload from "./PhotoUpload";
 import GalleryGrid from "./GalleryGrid";
 import { authService } from "../services/auth";
 import { galleryService } from "../services/gallery";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const BookContainer = styled.div`
   width: 100%;
-  height: calc(100vh - 60px);
+  height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 20px;
+  padding: 0;
   margin: 0;
   position: relative;
   overflow: hidden;
 
   .demo-book {
     width: 100% !important;
-    max-width: 320px !important;
+    height: 100% !important;
+    max-width: none !important;
     margin: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
+    padding: 15px !important;
     position: relative !important;
-
-    @media (max-width: 320px) {
-      padding: 0 !important;
-      margin: 0 !important;
-      left: 0 !important;
-      right: 0 !important;
-      max-width: 100% !important;
-    }
-
-    @media (min-width: 375px) and (max-width: 411px) {
-      max-width: 355px !important;
-      margin: 0 auto !important;
-      padding: 0 10px !important;
-    }
-
-    @media (min-width: 412px) and (max-width: 599px) {
-      max-width: 392px !important;
-      margin: 0 auto !important;
-      padding: 0 !important;
-      left: 50% !important;
-      transform: translateX(-50%) !important;
-    }
-
-    @media (min-width: 600px) and (max-width: 768px) {
-      max-width: 550px !important;
-      margin: 0 auto !important;
-      padding: 0 !important;
-      left: 50% !important;
-      transform: translateX(-50%) !important;
-    }
 
     @media (min-width: 769px) {
       max-width: 1400px !important;
+      height: calc(100vh - 100px) !important;
+      padding: 20px !important;
     }
   }
 
-  @media (max-width: 320px) {
-    padding: 0;
-  }
-
-  @media (min-width: 375px) and (max-width: 411px) {
-    padding: 10px;
-    height: calc(100vh - 40px);
-  }
-
-  @media (min-width: 412px) and (max-width: 599px) {
-    padding: 0;
-    height: calc(100vh - 40px);
+  .book-wrapper {
+    width: 100%;
+    height: calc(100vh - 100px);
+    display: flex;
     justify-content: center;
-  }
+    align-items: center;
+    padding: 0 15px;
+    max-height: 800px;
 
-  @media (min-width: 600px) and (max-width: 768px) {
-    padding: 0;
-    height: calc(100vh - 40px);
-    justify-content: center;
+    @media (max-height: 700px) {
+      height: calc(100vh - 80px);
+    }
+
+    @media (max-height: 600px) {
+      height: calc(100vh - 60px);
+    }
   }
 `;
 
@@ -227,20 +195,6 @@ const PageNumber = styled.div`
   text-align: center;
 `;
 
-const TurnPageHint = styled.div`
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: rgba(44, 62, 80, 0.8);
-  color: white;
-  padding: 10px 15px;
-  border-radius: 8px;
-  font-size: 0.9em;
-  opacity: ${(props) => (props.$show ? 1 : 0)};
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-`;
-
 const NavigationButtons = styled.div`
   position: fixed;
   bottom: 0;
@@ -248,16 +202,18 @@ const NavigationButtons = styled.div`
   right: 0;
   display: flex;
   flex-direction: row;
-  gap: 20px;
+  gap: 8px;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   background: linear-gradient(to top, rgba(255,255,255,1) 0%, rgba(255,255,255,0.95) 70%, rgba(255,255,255,0) 100%);
-  padding: 10px;
-  height: 60px;
+  padding: 8px 12px;
+  height: 56px;
 
-  @media (max-width: 480px) {
-    gap: 10px;
+  @media (min-width: 769px) {
+    gap: 20px;
+    padding: 15px;
+    height: 60px;
   }
 `;
 
@@ -265,16 +221,23 @@ const NavButton = styled.button`
   background: rgba(46, 111, 64, 0.9);
   color: white;
   border: none;
-  padding: 8px 15px;
+  padding: 8px;
   border-radius: 8px;
   cursor: pointer;
   font-family: "Lato", sans-serif;
   white-space: nowrap;
   flex: 1;
-  max-width: 120px;
-  min-height: 35px;
-  font-size: 13px;
+  max-width: 100px;
+  min-height: 40px;
+  font-size: 12px;
+  font-weight: 600;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  position: relative;
+  transition: all 0.2s ease-in-out;
 
   &:hover {
     background: rgba(46, 111, 64, 1);
@@ -285,6 +248,26 @@ const NavButton = styled.button`
     cursor: not-allowed;
   }
 
+  &[data-direction="prev"] {
+    &:hover::before {
+      content: "←";
+      position: absolute;
+      left: 8px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+  }
+
+  &[data-direction="next"] {
+    &:hover::after {
+      content: "→";
+      position: absolute;
+      right: 8px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+  }
+
   @media (min-width: 769px) {
     padding: 10px 20px;
     font-size: 14px;
@@ -292,19 +275,50 @@ const NavButton = styled.button`
   }
 
   @media (max-width: 360px) {
-    max-width: 80px;
-    padding: 8px 10px;
+    max-width: 70px;
+    padding: 8px;
+    font-size: 11px;
     
     &[data-direction="prev"]::before {
       content: "←";
+      margin-right: 2px;
+      font-size: 16px;
+      font-weight: bold;
     }
     
     &[data-direction="next"]::before {
       content: "→";
+      margin-left: 2px;
+      font-size: 16px;
+      font-weight: bold;
     }
     
     span {
       display: none;
+    }
+  }
+
+  /* Middle button (Share Memory) specific styles */
+  &:nth-child(2) {
+    background: rgba(46, 111, 64, 0.9);
+    max-width: 120px;
+    
+    &:hover {
+      background: rgba(46, 111, 64, 1);
+      &::after {
+        content: "";
+        position: absolute;
+        right: 8px;
+        width: 18px;
+        height: 18px;
+        background: url('/images/cameraheart-icon.svg') no-repeat center;
+        background-size: contain;
+        filter: brightness(0) invert(1);
+      }
+    }
+    
+    @media (max-width: 360px) {
+      max-width: 90px;
     }
   }
 `;
@@ -348,7 +362,7 @@ const PageContainer = styled.div.attrs(props => ({
   box-shadow: inset -7px 0 30px -7px rgba(0, 0, 0, 0.4);
   height: 100%;
   width: 100%;
-  padding: 0.3cm;
+  padding: 15px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -357,7 +371,7 @@ const PageContainer = styled.div.attrs(props => ({
   overflow: hidden;
 
   @media (min-width: 769px) {
-    padding: 0.5cm;
+    padding: 30px;
   }
 
   &::before {
@@ -553,7 +567,8 @@ const DateStamp = styled.span`
 `;
 
 const Book = ({ onLogin }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const navigate = useNavigate();
+  const [isAuthenticated, setIsAuthenticated] = useState(authService.isAuthenticated());
   const [isLoading, setIsLoading] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(false);
@@ -563,19 +578,19 @@ const Book = ({ onLogin }) => {
   const [submissions, setSubmissions] = useState([]);
   const [showBook, setShowBook] = useState(true);
   const bookRef = useRef(null);
-  const containerRef = useRef(null);
   const [showHint, setShowHint] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const containerRef = useRef(null);
+
 
   // Add a constant for fixed pages (excluding dynamic submission pages)
   const FIXED_PAGES = {
     FRONT_COVER: 0,
-    SHARE_MEMORY: 1,
-    GALLERY_GRID: 2,
-    FINAL_MESSAGE: 3,
-    BACK_COVER: 4
+    GALLERY_GRID: 1,
+    FINAL_MESSAGE: 2,
+    BACK_COVER: 3
   };
 
   const totalPages = submissions.length + Object.keys(FIXED_PAGES).length;
@@ -638,13 +653,6 @@ const Book = ({ onLogin }) => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-
-  // Immediately check auth status on mount
-  useEffect(() => {
-    if (isAuthenticated) {
-      setRefreshTrigger(prev => !prev);
-    }
-  }, [isAuthenticated]);
 
   const handleLogin = async () => {
     try {
@@ -793,27 +801,27 @@ const Book = ({ onLogin }) => {
           <HTMLFlipBook
             key={`book-${isAuthenticated}-${loading}-${submissions.length}`}
             ref={bookRef}
-            width={dimensions.width}
-            height={dimensions.height}
+            width={Math.min(window.innerWidth - 60, 600)} // Added maximum width and increased padding
+            height={Math.min(window.innerHeight - 100, 800)}
             size="stretch"
-            minWidth={280}
-            maxWidth={dimensions.width}
-            minHeight={400}
-            maxHeight={dimensions.height}
+            minWidth={Math.min(window.innerWidth - 60, 600)}
+            maxWidth={Math.min(window.innerWidth - 60, 600)}
+            minHeight={Math.min(window.innerHeight - 100, 800)}
+            maxHeight={Math.min(window.innerHeight - 100, 800)}
             maxShadowOpacity={0.5}
             showCover={true}
-            mobileScrollSupport={isAuthenticated}
+            mobileScrollSupport={true}
             className="demo-book"
-            disabled={!isAuthenticated}
             flippingTime={1000}
-            useMouseEvents={false}
-            swipeDistance={0}
+            useMouseEvents={!isMobile}
+            swipeDistance={30}
             clickEventForward={false}
-            usePortrait={isMobile}
+            usePortrait={true}
             startPage={0}
             onFlip={onFlip}
             drawShadow={true}
             autoSize={true}
+            style={{ touchAction: 'none' }}
           >
             {/* Cover Page */}
             <div className="page">
@@ -831,25 +839,10 @@ const Book = ({ onLogin }) => {
               </Page>
             </div>
 
-            {/* Share Memory Page */}
-            <div className="page">
-              <Page number="1">
-                <PageContent $isAuthenticated={isAuthenticated}>
-                  <GuestbookIcon
-                    src="/images/guestbook-icon.svg"
-                    alt="Guestbook Icon"
-                    onClick={() => console.log("Guestbook Icon Clicked")}
-                  />
-                  <PageTitle $isCover={false}>Share Your Memory</PageTitle>
-                  <PhotoUpload setRefreshTrigger={setRefreshTrigger} onSuccess={handleImageUploadSuccess} />
-                </PageContent>
-              </Page>
-            </div>
-
             {/* Memory Pages */}
             {submissions.map((submission, index) => (
               <div className="page" key={`memory-${submission.id}`}>
-                <Page number={index + 2}>
+                <Page number={index + 1}>
                   <MemoryPageContent 
                     $isAuthenticated={isAuthenticated}
                     $textOnly={!submission.image || submission.image.includes('placeholder')}
@@ -885,7 +878,7 @@ const Book = ({ onLogin }) => {
 
             {/* Gallery Grid Page */}
             <div className="page">
-              <Page number={submissions.length + 2}>
+              <Page number={submissions.length + 1}>
                 <PageContent $isAuthenticated={isAuthenticated}>
                   <CameraIcon
                     src="/images/cameraheart-icon.svg"
@@ -900,7 +893,7 @@ const Book = ({ onLogin }) => {
 
             {/* Final Message Page */}
             <div className="page">
-              <Page number={submissions.length + 3}>
+              <Page number={submissions.length + 2}>
                 <PageContent $isAuthenticated={isAuthenticated}>
                   <ThankfulIcon
                     src="/images/thankful-icon.svg"
@@ -945,14 +938,19 @@ const Book = ({ onLogin }) => {
                 disabled={page === 0}
                 data-direction="prev"
               >
-                <span>← Previous Page</span>
+                <span>Previous</span>
+              </NavButton>
+              <NavButton 
+                onClick={() => navigate('/')}
+              >
+                <span>Share Memory</span>
               </NavButton>
               <NavButton 
                 onClick={nextPage} 
                 disabled={page === totalPages - 1}
                 data-direction="next"
               >
-                <span>Next Page →</span>
+                <span>Next</span>
               </NavButton>
             </NavigationButtons>
           )}
