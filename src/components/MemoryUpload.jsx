@@ -28,6 +28,7 @@ const ContentContainer = styled.div`
   padding: 30px;
   margin-top: 20px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  position: relative;
 `;
 
 const HeaderIcon = styled.img`
@@ -264,9 +265,26 @@ const Instructions = styled.div`
   }
 `;
 
-const MemoryUpload = () => {
+const AdminIndicator = styled.div`
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: #2e6f40;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: "Lato", sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+`;
+
+const MemoryUpload = ({ onLogin }) => {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(authService.isAuthenticated());
+  const [isAdmin, setIsAdmin] = useState(authService.isAdmin());
   const [guestName, setGuestName] = useState("");
   const [message, setMessage] = useState("");
   const [image, setImage] = useState(null);
@@ -296,7 +314,9 @@ const MemoryUpload = () => {
   useEffect(() => {
     const checkAuth = () => {
       const isAuthed = authService.isAuthenticated();
+      const isAdminUser = authService.isAdmin();
       setIsAuthenticated(isAuthed);
+      setIsAdmin(isAdminUser);
     };
     
     checkAuth();
@@ -393,6 +413,11 @@ const MemoryUpload = () => {
         opacity={0.6}
       />
       <ContentContainer>
+        {isAuthenticated && isAdmin && (
+          <AdminIndicator>
+            👑 Admin Mode
+          </AdminIndicator>
+        )}
         <HeaderIcon 
           src="/images/cameraheart-icon.svg" 
           alt="Camera heart icon" 

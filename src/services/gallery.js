@@ -235,15 +235,31 @@ export const galleryService = {
           endpoint: `/images/${imageId}/download/`
         });
         
-        console.log('Falling back to direct S3 download');
-        // Fallback to direct S3 download - this is our reliable method
-        const downloadWindow = window.open(imageUrl, '_blank');
-        if (!downloadWindow) {
-          console.error('Pop-up was blocked. Please allow pop-ups for this site.');
+       // Use fetch instead of window.location
+       try {
+        const response = await fetch(imageUrl);
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = imageUrl.split('/').pop();
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        return true;
+      } catch (fetchError) {
+        console.error('Direct download failed:', fetchError);
+        // As a last resort, open in new tab
+        const newWindow = window.open('about:blank', '_blank');
+        if (newWindow) {
+          newWindow.location.href = imageUrl;
+        } else {
           throw new Error('Pop-up blocked');
         }
         return true;
       }
+    }
     } catch (error) {
       console.error('Download error:', error);
       throw { error: 'Failed to download image' };
