@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { authService } from '../services/auth';
 
@@ -112,7 +112,7 @@ const LoginForm = ({ onLogin }) => {
   });
   const [error, setError] = useState('');
   const location = useLocation();
-
+  const navigate = useNavigate();
   // Check if we were redirected here due to requiring authentication
   useEffect(() => {
     if (location.state?.requiresAuth) {
@@ -127,9 +127,13 @@ const LoginForm = ({ onLogin }) => {
       if (isAdminMode) {
         // Admin login with username and password
         await authService.login(formData.username, formData.password);
+        // Navigate to admin dashboard for admin users
+        navigate('/admin');
       } else {
         // Guest login with just the password
         await authService.login(null, formData.password);
+        // Navigate to share memory for non-admin users
+        navigate('/');
       }
       onLogin();
       setError('');
