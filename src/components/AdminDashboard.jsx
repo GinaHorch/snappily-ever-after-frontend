@@ -397,12 +397,161 @@ const FlipSymbol = styled.span`
   margin: 0 8px;
 `;
 
+const GalleryGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 20px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    padding: 15px;
+  }
+`;
+
+const MemoryCard = styled.div`
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+`;
+
+const MemoryImage = styled.img`
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-bottom: 1px solid #eee;
+`;
+
+const MemoryContent = styled.div`
+  padding: 15px;
+  flex-grow: 1;
+`;
+
+const MemoryName = styled.h3`
+  color: #2e6f40;
+  font-size: 18px;
+  margin-bottom: 8px;
+  font-family: "Playfair Display", serif;
+`;
+
+const MemoryMessage = styled.p`
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 15px;
+  font-family: "Lato", sans-serif;
+  line-height: 1.4;
+`;
+
+const MemoryDate = styled.span`
+  color: #999;
+  font-size: 12px;
+  font-family: "Lato", sans-serif;
+`;
+
+const ActionButtons = styled.div`
+  display: flex;
+  gap: 8px;
+  padding: 15px;
+  border-top: 1px solid #eee;
+`;
+
+const ActionButton = styled.button`
+  flex: 1;
+  padding: 8px;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: "Lato", sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+
+  &.delete {
+    background-color: #fee2e2;
+    color: #dc2626;
+
+    &:hover {
+      background-color: #fecaca;
+    }
+  }
+
+  &.download {
+    background-color: #e0e7ff;
+    color: #4f46e5;
+
+    &:hover {
+      background-color: #dbeafe;
+    }
+  }
+`;
+
+const NoMemories = styled.div`
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-family: "Lato", sans-serif;
+  grid-column: 1 / -1;
+`;
+
+const SearchBar = styled.input`
+  width: 100%;
+  max-width: 300px;
+  padding: 10px;
+  border: 2px solid #2e6f40;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 20px;
+  font-family: "Lato", sans-serif;
+
+  &:focus {
+    outline: none;
+    border-color: #1e4a2a;
+  }
+`;
+
+const FilterContainer = styled.div`
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+`;
+
+const FilterButton = styled.button`
+  padding: 8px 16px;
+  border: 2px solid #2e6f40;
+  border-radius: 20px;
+  background: ${props => props.$active ? '#2e6f40' : 'transparent'};
+  color: ${props => props.$active ? 'white' : '#2e6f40'};
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: "Lato", sans-serif;
+
+  &:hover {
+    background: ${props => props.$active ? '#1e4a2a' : 'rgba(46, 111, 64, 0.1)'};
+  }
+`;
+
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [stats, setStats] = useState({
     totalImages: 0,
     totalMessages: 0
   });
+  const [memories, setMemories] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filter, setFilter] = useState("all"); // all, photos, messages
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -425,6 +574,12 @@ const AdminDashboard = () => {
     fetchStats();
   }, []);
 
+  useEffect(() => {
+    if (activeTab === "gallery") {
+      fetchMemories();
+    }
+  }, [activeTab]);
+
   const fetchStats = async () => {
     try {
       const images = await galleryService.getAllImages();
@@ -436,6 +591,18 @@ const AdminDashboard = () => {
     } catch (error) {
       console.error("Error fetching stats:", error);
       setError("Failed to load statistics. Please try again later.");
+    }
+  };
+
+  const fetchMemories = async () => {
+    try {
+      setLoading(true);
+      const data = await galleryService.getAllImages();
+      setMemories(data);
+    } catch (err) {
+      setError("Failed to load memories");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -527,6 +694,64 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this memory?")) return;
+    
+    try {
+      setLoading(true);
+      await galleryService.deleteImage(id);
+      await fetchMemories();
+      setSuccess("Memory deleted successfully");
+    } catch (err) {
+      setError("Failed to delete memory");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDownload = async (memory) => {
+    if (!memory || !memory.id) {
+      setError("Invalid memory data for download");
+      return;
+    }
+    
+    try {
+      // If there's an image, download it
+      if (memory.image && !memory.image.includes('placeholder')) {
+        await galleryService.downloadImage(memory.image, memory.id);
+      }
+      
+      // If there's a message, create a text file
+      if (memory.comment) {
+        const textContent = `Memory from ${memory.name}\nDate: ${new Date(memory.uploaded_at).toLocaleDateString()}\n\nMessage:\n${memory.comment}`;
+        const blob = new Blob([textContent], { type: 'text/plain' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `memory-${memory.name}-${new Date(memory.uploaded_at).toISOString().split('T')[0]}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }
+      
+      setSuccess("Memory downloaded successfully");
+    } catch (err) {
+      console.error('Error downloading memory:', err);
+      setError("Failed to download memory. Please try again.");
+    }
+  };
+
+  const filteredMemories = memories
+    .filter(memory => {
+      const matchesSearch = memory.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (memory.comment || "").toLowerCase().includes(searchTerm.toLowerCase());
+      
+      if (filter === "photos") return matchesSearch && memory.image && !memory.image.includes('placeholder');
+      if (filter === "messages") return matchesSearch && memory.comment;
+      return matchesSearch;
+    });
+
   return (
     <DashboardContainer>
       <BackLink to="/">← Back to Guestbook</BackLink>
@@ -551,6 +776,12 @@ const AdminDashboard = () => {
           Overview
         </Tab>
         <Tab
+          $active={activeTab === "gallery"}
+          onClick={() => setActiveTab("gallery")}
+        >
+          Gallery Management
+        </Tab>
+        <Tab
           $active={activeTab === "settings"}
           onClick={() => setActiveTab("settings")}
         >
@@ -570,6 +801,75 @@ const AdminDashboard = () => {
               <p>{stats.totalMessages}</p>
             </StatCard>
           </StatsGrid>
+        </>
+      )}
+
+      {activeTab === "gallery" && (
+        <>
+          <SearchBar
+            type="text"
+            placeholder="Search memories by name or message..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <FilterContainer>
+            <FilterButton
+              $active={filter === "all"}
+              onClick={() => setFilter("all")}
+            >
+              All Memories
+            </FilterButton>
+            <FilterButton
+              $active={filter === "photos"}
+              onClick={() => setFilter("photos")}
+            >
+              Photos Only
+            </FilterButton>
+            <FilterButton
+              $active={filter === "messages"}
+              onClick={() => setFilter("messages")}
+            >
+              Messages Only
+            </FilterButton>
+          </FilterContainer>
+          <GalleryGrid>
+            {filteredMemories.length === 0 ? (
+              <NoMemories>No memories found</NoMemories>
+            ) : (
+              filteredMemories.map(memory => (
+                <MemoryCard key={memory.id}>
+                  {memory.image && !memory.image.includes('placeholder') && (
+                    <MemoryImage src={memory.image} alt={`Memory from ${memory.name}`} />
+                  )}
+                  <MemoryContent>
+                    <MemoryName>{memory.name}</MemoryName>
+                    {memory.comment && (
+                      <MemoryMessage>{memory.comment}</MemoryMessage>
+                    )}
+                    <MemoryDate>
+                      {new Date(memory.uploaded_at).toLocaleDateString()}
+                    </MemoryDate>
+                  </MemoryContent>
+                  <ActionButtons>
+                    {(memory.image && !memory.image.includes('placeholder')) || memory.comment ? (
+                      <ActionButton
+                        className="download"
+                        onClick={() => handleDownload(memory)}
+                      >
+                        ⬇️ Download
+                      </ActionButton>
+                    ) : null}
+                    <ActionButton
+                      className="delete"
+                      onClick={() => handleDelete(memory.id)}
+                    >
+                      🗑️ Delete
+                    </ActionButton>
+                  </ActionButtons>
+                </MemoryCard>
+              ))
+            )}
+          </GalleryGrid>
         </>
       )}
 
