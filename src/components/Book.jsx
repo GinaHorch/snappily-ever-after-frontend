@@ -292,10 +292,6 @@ const NavButton = styled.button`
       font-size: 16px;
       font-weight: bold;
     }
-    
-    span {
-      display: none;
-    }
   }
 
   /* Middle button (Share Memory) specific styles */
@@ -319,6 +315,17 @@ const NavButton = styled.button`
     
     @media (max-width: 360px) {
       max-width: 90px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+           
+      /* Keep the text visible */
+      span {
+        display: block;
+        font-size: 10px;
+        line-height: 1;
+      }
     }
   }
 `;
