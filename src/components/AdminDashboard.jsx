@@ -722,6 +722,125 @@ const AdminDashboard = () => {
         setSuccess("Image downloaded successfully");
         return;
       }
+
+      // Create an HTML template that matches the book style
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Memory from ${memory.name}</title>
+      <style>
+        body {
+          font-family: "Playfair Display", serif;
+          max-width: 800px;
+          margin: 20px auto;
+          padding: 30px;
+          background-color: #FAF9F6;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .memory-card {
+          text-align: center;
+        }
+        .title {
+          color: #2e6f40;
+          font-size: 24px;
+          margin-bottom: 20px;
+        }
+        .image-container {
+          margin: 20px 0;
+        }
+        img {
+          max-width: 100%;
+          max-height: 500px;
+          border-radius: 8px;
+          box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .message {
+          font-size: 18px;
+          line-height: 1.6;
+          color: #2c3e50;
+          margin: 20px 0;
+          font-style: italic;
+        }
+        .footer {
+          margin-top: 30px;
+          text-align: center;
+        }
+        .name {
+          color: #2e6f40;
+          font-weight: bold;
+          font-size: 20px;
+        }
+        .date {
+          color: #95a5a6;
+          font-size: 16px;
+          margin-top: 5px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="memory-card">
+        <h1 class="title">A Snap in Time</h1>
+        ${memory.image && !memory.image.includes('placeholder') ? 
+          `<div class="image-container">
+            <img src="${memory.image}" alt="Memory from ${memory.name}">
+          </div>` : ''
+        }
+        ${memory.comment ? 
+          `<div class="message">
+            ${memory.comment}
+          </div>` : ''
+        }
+        <div class="footer">
+          <div class="name">${memory.name}</div>
+          <div class="date">${new Date(memory.uploaded_at).toLocaleDateString()}</div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  // Create and download the HTML file
+  const blob = new Blob([htmlContent], { type: 'text/html' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `memory-${memory.name}-${new Date(memory.uploaded_at).toISOString().split('T')[0]}.html`;
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+  
+  setSuccess("Memory downloaded successfully");
+} catch (err) {
+  console.error('Error downloading memory:', err);
+  setError("Failed to download memory. Please try again.");
+}
+};
+
+  const handleDownloadImage = async (memory) => {
+        if (!memory || !memory.id || !memory.image) {
+          setError("Invalid memory data for download");
+          return;
+        }
+        
+        try {
+          await galleryService.downloadImage(memory.image, memory.id);
+          setSuccess("Image downloaded successfully");
+        } catch (err) {
+          console.error('Error downloading image:', err);
+          setError("Failed to download image. Please try again.");
+        }
+      };
+      
+  const handleDownloadMemory = async (memory) => {
+        if (!memory || !memory.id) {
+          setError("Invalid memory data for download");
+          return;
+        }
+        
+        try {
   
       // Create an HTML template that matches the book style
       const htmlContent = `
@@ -929,12 +1048,22 @@ const AdminDashboard = () => {
                   </MemoryContent>
                   <ActionButtons>
                     {(memory.image && !memory.image.includes('placeholder')) || memory.comment ? (
-                      <ActionButton
-                        className="download"
-                        onClick={() => handleDownload(memory)}
-                      >
-                        ⬇️ Download
-                      </ActionButton>
+                      <>
+                      {memory.image && !memory.image.includes('placeholder') && (
+                        <ActionButton
+                          className="download"
+                          onClick={() => handleDownloadImage(memory)}
+                        >
+                            📸 Image download
+                        </ActionButton>
+                      )}
+                        <ActionButton
+                          className="download"
+                          onClick={() => handleDownloadMemory(memory)}
+                        >
+                          📖 Memory download
+                        </ActionButton>
+                      </>
                     ) : null}
                     <ActionButton
                       className="delete"
