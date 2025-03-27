@@ -281,6 +281,44 @@ const AdminIndicator = styled.div`
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
+const LogoutButton = styled.button`
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 8px 16px;
+  background-color: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: "Lato", sans-serif;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  @media (max-width: 480px) {
+    padding: 6px 12px;
+    font-size: 13px;
+    top: 15px;
+    right: 15px;
+  }
+
+  &:hover {
+    background-color: #b91c1c;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  &::before {
+    content: "🚪";
+    font-size: 16px;
+  }
+`;
+
 const MemoryUpload = ({ onLogin }) => {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(authService.isAuthenticated());
@@ -425,6 +463,14 @@ const MemoryUpload = ({ onLogin }) => {
           <AdminIndicator>
             👑 Admin Mode
           </AdminIndicator>
+        )}
+        {isAuthenticated && !isAdmin && (
+          <LogoutButton onClick={() => {
+            authService.logout();
+            window.location.reload();
+          }}>
+            Logout
+          </LogoutButton>
         )}
         <HeaderIcon 
           src="/images/cameraheart-icon.svg" 
