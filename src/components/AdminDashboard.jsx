@@ -520,29 +520,6 @@ const SearchBar = styled.input`
   }
 `;
 
-const FilterContainer = styled.div`
-  display: flex;
-  gap: 15px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-  justify-content: center;
-`;
-
-const FilterButton = styled.button`
-  padding: 8px 16px;
-  border: 2px solid #2e6f40;
-  border-radius: 20px;
-  background: ${props => props.$active ? '#2e6f40' : 'transparent'};
-  color: ${props => props.$active ? 'white' : '#2e6f40'};
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-family: "Lato", sans-serif;
-
-  &:hover {
-    background: ${props => props.$active ? '#1e4a2a' : 'rgba(46, 111, 64, 0.1)'};
-  }
-`;
-
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [stats, setStats] = useState({
@@ -551,7 +528,6 @@ const AdminDashboard = () => {
   });
   const [memories, setMemories] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filter, setFilter] = useState("all"); // all, photos, messages
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -947,18 +923,7 @@ const AdminDashboard = () => {
       
       if (!matchesSearch) return false;
     }
-  
-    switch (filter) {
-      case 'photos':
-        // Show entries that have photos (regardless of messages)
-        return memory.image && !memory.image.includes('placeholder');
-      case 'messages':
-        // Show entries that have ONLY messages (no photos)
-        return memory.comment && (!memory.image || memory.image.includes('placeholder'));
-      default:
-        // Show all entries
-        return true;
-    }
+    return true;  
   });
 
   return (
@@ -1021,26 +986,7 @@ const AdminDashboard = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <FilterContainer>
-            <FilterButton
-              $active={filter === "all"}
-              onClick={() => setFilter("all")}
-            >
-              All Memories
-            </FilterButton>
-            <FilterButton
-              $active={filter === "photos"}
-              onClick={() => setFilter("photos")}
-            >
-              Photos Only
-            </FilterButton>
-            <FilterButton
-              $active={filter === "messages"}
-              onClick={() => setFilter("messages")}
-            >
-              Messages Only
-            </FilterButton>
-          </FilterContainer>
+          
           <GalleryGrid>
             {filteredMemories.length === 0 ? (
               <NoMemories>No memories found</NoMemories>
