@@ -573,9 +573,75 @@ const DateStamp = styled.span`
   font-size: 0.9em;
 `;
 
+const LogoutButton = styled.button`
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 8px 16px;
+  background-color: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: "Lato", sans-serif;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  @media (max-width: 480px) {
+    padding: 6px 12px;
+    font-size: 13px;
+    top: 15px;
+    right: 15px;
+  }
+
+  &:hover {
+    background-color: #b91c1c;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  &::before {
+    content: "🚪";
+    font-size: 16px;
+  }
+`;
+
+const LoadingOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+`;
+
+const LoadingSpinner = styled.div`
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+
 const Book = ({ onLogin }) => {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(authService.isAuthenticated());
+  const [isAdmin, setIsAdmin] = useState(authService.isAdmin());
   const [isLoading, setIsLoading] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(false);
@@ -591,7 +657,6 @@ const Book = ({ onLogin }) => {
   const [isInitialized, setIsInitialized] = useState(false);
   const containerRef = useRef(null);
 
-
   // Add a constant for fixed pages (excluding dynamic submission pages)
   const FIXED_PAGES = {
     FRONT_COVER: 0,
@@ -601,6 +666,21 @@ const Book = ({ onLogin }) => {
   };
 
   const totalPages = submissions.length + Object.keys(FIXED_PAGES).length;
+
+  // Add effect to check authentication on mount
+  useEffect(() => {
+    const checkAuth = () => {
+      const isAuthed = authService.isAuthenticated();
+      const isAdminUser = authService.isAdmin();
+      setIsAuthenticated(isAuthed);
+      setIsAdmin(isAdminUser);
+    };
+    
+    checkAuth();
+    // Set up an interval to check auth status periodically
+    const interval = setInterval(checkAuth, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Replace the initialization effect with a dimensions calculation effect
   useEffect(() => {
@@ -860,7 +940,7 @@ const Book = ({ onLogin }) => {
                       <>
                         <MemoryImage src={submission.image} alt={`Memory from ${submission.name}`} />
                         <MemoryMessage>
-                          {submission.comment || "Captured a beautiful moment!"}
+                          {submission.comment === null ? `A beautiful moment captured by ${submission.name}` : submission.comment}
                         </MemoryMessage>
                       </>
                     ) : (
@@ -962,6 +1042,19 @@ const Book = ({ onLogin }) => {
             </NavigationButtons>
           )}
         </div>
+      )}
+      {isAuthenticated && !isAdmin && (
+        <LogoutButton onClick={() => {
+          authService.logout();
+          window.location.reload();
+        }}>
+          Logout
+        </LogoutButton>
+      )}
+      {loading && (
+        <LoadingOverlay>
+          <LoadingSpinner />
+        </LoadingOverlay>
       )}
     </BookContainer>
   );

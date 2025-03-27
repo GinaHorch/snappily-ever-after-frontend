@@ -281,6 +281,44 @@ const AdminIndicator = styled.div`
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
+const LogoutButton = styled.button`
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 8px 16px;
+  background-color: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: "Lato", sans-serif;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  @media (max-width: 480px) {
+    padding: 6px 12px;
+    font-size: 13px;
+    top: 15px;
+    right: 15px;
+  }
+
+  &:hover {
+    background-color: #b91c1c;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  &::before {
+    content: "🚪";
+    font-size: 16px;
+  }
+`;
+
 const MemoryUpload = ({ onLogin }) => {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(authService.isAuthenticated());
@@ -346,9 +384,17 @@ const MemoryUpload = ({ onLogin }) => {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      "image/*": [".jpeg", ".jpg", ".png", ".gif"],
+      "image/*": [".jpeg", ".jpg", ".png", ".gif", ".webp"],
     },
-    maxFiles: 1
+    maxSize: 5 * 1024 * 1024, // 5MB in bytes
+    multiple: false,
+    onDropRejected: (rejectedFiles) => {
+      if (rejectedFiles[0]?.errors[0]?.code === 'file-too-large') {
+        setError("File size is too large. Please upload an image smaller than 5MB.");
+      } else if (rejectedFiles[0]?.errors[0]?.code === 'file-invalid-type') {
+        setError("Invalid file type. Please upload a JPEG, PNG, WEBP, or GIF image.");
+      }
+    }
   });
 
   const handleSubmit = async (e) => {
@@ -366,7 +412,7 @@ const MemoryUpload = ({ onLogin }) => {
     try {
       const response = await galleryService.uploadImage({
         imageFile: image || null,
-        comment: message.trim() || null,
+        comment: message.trim() || "",
         name: guestName.trim(),
       });
 
@@ -418,6 +464,14 @@ const MemoryUpload = ({ onLogin }) => {
             👑 Admin Mode
           </AdminIndicator>
         )}
+        {isAuthenticated && !isAdmin && (
+          <LogoutButton onClick={() => {
+            authService.logout();
+            window.location.reload();
+          }}>
+            Logout
+          </LogoutButton>
+        )}
         <HeaderIcon 
           src="/images/cameraheart-icon.svg" 
           alt="Camera heart icon" 
@@ -462,7 +516,7 @@ const MemoryUpload = ({ onLogin }) => {
                 {preview ? (
                   <PreviewImage src={preview} alt="Preview" />
                 ) : (
-                  <p>Drag & drop your photo here, or click to select one photo at a time</p>
+                  <p>Click to add a photo - max size 5MB</p>
                 )}
               </DropZone>
 

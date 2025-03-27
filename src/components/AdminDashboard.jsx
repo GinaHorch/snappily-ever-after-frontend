@@ -520,38 +520,180 @@ const SearchBar = styled.input`
   }
 `;
 
-const FilterContainer = styled.div`
-  display: flex;
-  gap: 15px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-  justify-content: center;
-`;
-
-const FilterButton = styled.button`
-  padding: 8px 16px;
-  border: 2px solid #2e6f40;
-  border-radius: 20px;
-  background: ${props => props.$active ? '#2e6f40' : 'transparent'};
-  color: ${props => props.$active ? 'white' : '#2e6f40'};
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-family: "Lato", sans-serif;
-
-  &:hover {
-    background: ${props => props.$active ? '#1e4a2a' : 'rgba(46, 111, 64, 0.1)'};
+const ContributorsSection = styled.div`
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px #6666b3;
+  padding: 20px;
+  margin: 30px auto;
+  max-width: 800px;
+  
+  @media (max-width: 768px) {
+    margin: 20px auto;
+    padding: 15px;
   }
 `;
 
-const AdminDashboard = () => {
+const ContributorsTitle = styled.h3`
+  color: #2e6f40;
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.2em;
+  text-transform: uppercase;
+`;
+
+const ContributorsControls = styled.div`
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    gap: 10px;
+  }
+`;
+
+const ContributorsSearch = styled.input`
+  flex: 1;
+  min-width: 200px;
+  padding: 8px 12px;
+  border: 2px solid #2e6f40;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: "Lato", sans-serif;
+
+  &:focus {
+    outline: none;
+    border-color: #1e4a2a;
+  }
+`;
+
+const GroupingToggle = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-family: "Lato", sans-serif;
+  color: #2e6f40;
+  font-size: 14px;
+`;
+
+const SortingInfo = styled.p`
+  text-align: center;
+  color: #666;
+  font-size: 0.9em;
+  margin: 10px 0;
+  font-style: italic;
+`;
+
+const ContributorsList = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  border-radius: 4px;
+`;
+
+const ContributorItem = styled.li`
+  padding: 12px 15px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background-color: #f8f9fa;
+  }
+`;
+
+const ContributorName = styled.span`
+  color: #2e6f40;
+  font-weight: 500;
+`;
+
+const ContributorDate = styled.span`
+  color: #95a5a6;
+  font-size: 0.9em;
+`;
+
+const LogoutButton = styled.button`
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 8px 16px;
+  background-color: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: "Lato", sans-serif;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  @media (max-width: 480px) {
+    padding: 6px 12px;
+    font-size: 13px;
+    top: 15px;
+    right: 15px;
+  }
+
+  &:hover {
+    background-color: #b91c1c;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  &::before {
+    content: "🚪";
+    font-size: 16px;
+  }
+`;
+
+const PasswordInputWrapper = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
+const PasswordToggle = styled.button`
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  padding: 5px;
+  font-size: 14px;
+
+  &:hover {
+    color: #2e6f40;
+  }
+`;
+
+const AdminDashboard = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState("overview");
   const [stats, setStats] = useState({
-    totalImages: 0,
-    totalMessages: 0
+    totalMemories: 0,
+    contributors: []
   });
+  const [contributorSearch, setContributorSearch] = useState("");
+  const [sortAlphabetically, setSortAlphabetically] = useState(false);
   const [memories, setMemories] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filter, setFilter] = useState("all"); // all, photos, messages
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -566,8 +708,17 @@ const AdminDashboard = () => {
 
   // Guest credentials form
   const [guestForm, setGuestForm] = useState({
-    username: "",
-    password: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+
+  const [showPasswords, setShowPasswords] = useState({
+    currentGuestPassword: false,
+    newGuestPassword: false,
+    confirmGuestPassword: false,
+    currentAdminPassword: false,
+    newAdminPassword: false,
+    confirmAdminPassword: false
   });
 
   useEffect(() => {
@@ -584,15 +735,32 @@ const AdminDashboard = () => {
     try {
       const images = await galleryService.getAllImages();
       
+      // Create array of contributors with individual submissions
+      const contributors = images.map(memory => ({
+        name: memory.name,
+        timestamp: memory.uploaded_at,
+        hasImage: memory.image && !memory.image.includes('placeholder'),
+        hasMessage: !!memory.comment
+      }));
+
+      // Sort based on current sorting preference
+      const sortedContributors = sortAlphabetically
+        ? contributors.sort((a, b) => a.name.localeCompare(b.name))
+        : contributors.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      
       setStats({
-        totalImages: images.length,
-        totalMessages: images.filter((img) => img.comment).length
+        totalMemories: images.length,
+        contributors: sortedContributors
       });
     } catch (error) {
       console.error("Error fetching stats:", error);
       setError("Failed to load statistics. Please try again later.");
     }
   };
+
+  useEffect(() => {
+    fetchStats();
+  }, [sortAlphabetically]);
 
   const fetchMemories = async () => {
     try {
@@ -649,17 +817,34 @@ const AdminDashboard = () => {
     setError("");
     setSuccess("");
 
+    // Validate passwords match
+    if (guestForm.newPassword !== guestForm.confirmPassword) {
+      setError("New passwords do not match");
+      return;
+    }
+
+    // Validate password length
+    if (guestForm.newPassword.length < 4) {
+      setError("New password must be at least 4 characters long");
+      return;
+    }
+
     try {
       setLoading(true);
       await authService.updateGuestCredentials(
-        guestForm.username,
-        guestForm.password
+        "PreWedding",  // Fixed username
+        null,  // We don't need the admin password anymore
+        guestForm.newPassword  // New guest password
       );
-      setSuccess("Guest credentials updated successfully");
-      setGuestForm({ username: "", password: "" });
+      setSuccess("Guest password updated successfully! Make sure to share the new password with your guests.");
+      setGuestForm({ 
+        newPassword: "", 
+        confirmPassword: "" 
+      });
       fetchStats(); // Refresh stats
     } catch (err) {
-      setError(err.error || "Failed to update guest credentials");
+      console.error('Error updating guest credentials:', err);
+      setError(err.error || "Failed to update guest password. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -722,6 +907,125 @@ const AdminDashboard = () => {
         setSuccess("Image downloaded successfully");
         return;
       }
+
+      // Create an HTML template that matches the book style
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Memory from ${memory.name}</title>
+      <style>
+        body {
+          font-family: "Playfair Display", serif;
+          max-width: 800px;
+          margin: 20px auto;
+          padding: 30px;
+          background-color: #FAF9F6;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .memory-card {
+          text-align: center;
+        }
+        .title {
+          color: #2e6f40;
+          font-size: 24px;
+          margin-bottom: 20px;
+        }
+        .image-container {
+          margin: 20px 0;
+        }
+        img {
+          max-width: 100%;
+          max-height: 500px;
+          border-radius: 8px;
+          box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .message {
+          font-size: 18px;
+          line-height: 1.6;
+          color: #2c3e50;
+          margin: 20px 0;
+          font-style: italic;
+        }
+        .footer {
+          margin-top: 30px;
+          text-align: center;
+        }
+        .name {
+          color: #2e6f40;
+          font-weight: bold;
+          font-size: 20px;
+        }
+        .date {
+          color: #95a5a6;
+          font-size: 16px;
+          margin-top: 5px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="memory-card">
+        <h1 class="title">A Snap in Time</h1>
+        ${memory.image && !memory.image.includes('placeholder') ? 
+          `<div class="image-container">
+            <img src="${memory.image}" alt="Memory from ${memory.name}">
+          </div>` : ''
+        }
+        ${memory.comment ? 
+          `<div class="message">
+            ${memory.comment}
+          </div>` : ''
+        }
+        <div class="footer">
+          <div class="name">${memory.name}</div>
+          <div class="date">${new Date(memory.uploaded_at).toLocaleDateString()}</div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  // Create and download the HTML file
+  const blob = new Blob([htmlContent], { type: 'text/html' });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `memory-${memory.name}-${new Date(memory.uploaded_at).toISOString().split('T')[0]}.html`;
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+  
+  setSuccess("Memory downloaded successfully");
+} catch (err) {
+  console.error('Error downloading memory:', err);
+  setError("Failed to download memory. Please try again.");
+}
+};
+
+  const handleDownloadImage = async (memory) => {
+        if (!memory || !memory.id || !memory.image) {
+          setError("Invalid memory data for download");
+          return;
+        }
+        
+        try {
+          await galleryService.downloadImage(memory.image, memory.id);
+          setSuccess("Image downloaded successfully");
+        } catch (err) {
+          console.error('Error downloading image:', err);
+          setError("Failed to download image. Please try again.");
+        }
+      };
+      
+  const handleDownloadMemory = async (memory) => {
+        if (!memory || !memory.id) {
+          setError("Invalid memory data for download");
+          return;
+        }
+        
+        try {
   
       // Create an HTML template that matches the book style
       const htmlContent = `
@@ -819,18 +1123,36 @@ const AdminDashboard = () => {
     }
   };
 
-  const filteredMemories = memories
-    .filter(memory => {
-      const matchesSearch = memory.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          (memory.comment || "").toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredMemories = memories.filter(memory => {
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      const matchesSearch = 
+        memory.name.toLowerCase().includes(searchLower) ||
+        (memory.comment && memory.comment.toLowerCase().includes(searchLower));
       
-      if (filter === "photos") return matchesSearch && memory.image && !memory.image.includes('placeholder');
-      if (filter === "messages") return matchesSearch && memory.comment;
-      return matchesSearch;
-    });
+      if (!matchesSearch) return false;
+    }
+    return true;  
+  });
+
+  // Filter contributors based on search
+  const filteredContributors = stats.contributors.filter(contributor => {
+    if (!contributorSearch) return true;
+    return contributor.name.toLowerCase().includes(contributorSearch.toLowerCase());
+  });
+
+  const togglePasswordVisibility = (field) => {
+    setShowPasswords(prev => ({
+      ...prev,
+      [field]: !prev[field]
+    }));
+  };
 
   return (
     <DashboardContainer>
+      <LogoutButton onClick={onLogout}>
+        Logout
+      </LogoutButton>
       <BackLink to="/">← Back to Guestbook</BackLink>
       <Header>
         <TitleContainer>
@@ -870,14 +1192,55 @@ const AdminDashboard = () => {
         <>
           <StatsGrid>
             <StatCard>
-              <h3>Total Photos</h3>
-              <p>{stats.totalImages}</p>
-            </StatCard>
-            <StatCard>
-              <h3>Total Messages</h3>
-              <p>{stats.totalMessages}</p>
+              <h3>Total Memories</h3>
+              <p>{stats.totalMemories}</p>
             </StatCard>
           </StatsGrid>
+
+          <ContributorsSection>
+            <ContributorsTitle>Contributors</ContributorsTitle>
+            <ContributorsControls>
+              <ContributorsSearch
+                type="text"
+                placeholder="Search contributors..."
+                value={contributorSearch}
+                onChange={(e) => setContributorSearch(e.target.value)}
+              />
+              <GroupingToggle>
+                <input
+                  type="checkbox"
+                  checked={sortAlphabetically}
+                  onChange={() => setSortAlphabetically(!sortAlphabetically)}
+                />
+                Sort A-Z
+              </GroupingToggle>
+            </ContributorsControls>
+            <SortingInfo>
+              {sortAlphabetically ? 
+                "Sorted alphabetically by name" :
+                "Sorted by most recent first"}
+            </SortingInfo>
+            <ContributorsList>
+              {filteredContributors.length > 0 ? (
+                filteredContributors.map((contributor, index) => (
+                  <ContributorItem 
+                    key={`${contributor.name}_${contributor.timestamp}_${index}`}
+                  >
+                    <ContributorName>
+                      {contributor.name}
+                    </ContributorName>
+                    <ContributorDate>
+                      {new Date(contributor.timestamp).toLocaleDateString()}
+                    </ContributorDate>
+                  </ContributorItem>
+                ))
+              ) : (
+                <ContributorItem>
+                  <ContributorName>No contributors found</ContributorName>
+                </ContributorItem>
+              )}
+            </ContributorsList>
+          </ContributorsSection>
         </>
       )}
 
@@ -889,26 +1252,7 @@ const AdminDashboard = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <FilterContainer>
-            <FilterButton
-              $active={filter === "all"}
-              onClick={() => setFilter("all")}
-            >
-              All Memories
-            </FilterButton>
-            <FilterButton
-              $active={filter === "photos"}
-              onClick={() => setFilter("photos")}
-            >
-              Photos Only
-            </FilterButton>
-            <FilterButton
-              $active={filter === "messages"}
-              onClick={() => setFilter("messages")}
-            >
-              Messages Only
-            </FilterButton>
-          </FilterContainer>
+          
           <GalleryGrid>
             {filteredMemories.length === 0 ? (
               <NoMemories>No memories found</NoMemories>
@@ -929,12 +1273,22 @@ const AdminDashboard = () => {
                   </MemoryContent>
                   <ActionButtons>
                     {(memory.image && !memory.image.includes('placeholder')) || memory.comment ? (
-                      <ActionButton
-                        className="download"
-                        onClick={() => handleDownload(memory)}
-                      >
-                        ⬇️ Download
-                      </ActionButton>
+                      <>
+                      {memory.image && !memory.image.includes('placeholder') && (
+                        <ActionButton
+                          className="download"
+                          onClick={() => handleDownloadImage(memory)}
+                        >
+                            📸 Image download
+                        </ActionButton>
+                      )}
+                        <ActionButton
+                          className="download"
+                          onClick={() => handleDownloadMemory(memory)}
+                        >
+                          📖 Memory download
+                        </ActionButton>
+                      </>
                     ) : null}
                     <ActionButton
                       className="delete"
@@ -957,18 +1311,26 @@ const AdminDashboard = () => {
               Update Admin Credentials{" "}
             </HeaderTitle>
             <Form onSubmit={handlePasswordChange}>
-              <Input
-                type="password"
-                placeholder="Current Password"
-                value={passwordForm.oldPassword}
-                onChange={(e) =>
-                  setPasswordForm((prev) => ({
-                    ...prev,
-                    oldPassword: e.target.value,
-                  }))
-                }
-                required
-              />
+              <PasswordInputWrapper>
+                <Input
+                  type={showPasswords.currentAdminPassword ? "text" : "password"}
+                  placeholder="Current Password"
+                  value={passwordForm.oldPassword}
+                  onChange={(e) =>
+                    setPasswordForm((prev) => ({
+                      ...prev,
+                      oldPassword: e.target.value,
+                    }))
+                  }
+                  required
+                />
+                <PasswordToggle
+                  type="button"
+                  onClick={() => togglePasswordVisibility('currentAdminPassword')}
+                >
+                  {showPasswords.currentAdminPassword ? '👁️' : '👁️‍🗨️'}
+                </PasswordToggle>
+              </PasswordInputWrapper>
               <Input
                 type="text"
                 placeholder="New Username (optional)"
@@ -980,30 +1342,47 @@ const AdminDashboard = () => {
                   }))
                 }
               />
-              <Input
-                type="password"
-                placeholder="New Password (optional)"
-                value={passwordForm.newPassword}
-                onChange={(e) =>
-                  setPasswordForm((prev) => ({
-                    ...prev,
-                    newPassword: e.target.value,
-                  }))
-                }
-              />
-              <Input
-                type="password"
-                placeholder="Confirm New Password"
-                value={passwordForm.confirmPassword}
-                onChange={(e) =>
-                  setPasswordForm((prev) => ({
-                    ...prev,
-                    confirmPassword: e.target.value,
-                  }))
-                }
-                disabled={!passwordForm.newPassword}
-                required={!!passwordForm.newPassword}
-              />
+              <PasswordInputWrapper>
+                <Input
+                  type={showPasswords.newAdminPassword ? "text" : "password"}
+                  placeholder="New Password (optional)"
+                  value={passwordForm.newPassword}
+                  onChange={(e) =>
+                    setPasswordForm((prev) => ({
+                      ...prev,
+                      newPassword: e.target.value,
+                    }))
+                  }
+                />
+                <PasswordToggle
+                  type="button"
+                  onClick={() => togglePasswordVisibility('newAdminPassword')}
+                >
+                  {showPasswords.newAdminPassword ? '👁️' : '👁️‍🗨️'}
+                </PasswordToggle>
+              </PasswordInputWrapper>
+              <PasswordInputWrapper>
+                <Input
+                  type={showPasswords.confirmAdminPassword ? "text" : "password"}
+                  placeholder="Confirm New Password"
+                  value={passwordForm.confirmPassword}
+                  onChange={(e) =>
+                    setPasswordForm((prev) => ({
+                      ...prev,
+                      confirmPassword: e.target.value,
+                    }))
+                  }
+                  disabled={!passwordForm.newPassword}
+                  required={!!passwordForm.newPassword}
+                />
+                <PasswordToggle
+                  type="button"
+                  onClick={() => togglePasswordVisibility('confirmAdminPassword')}
+                  disabled={!passwordForm.newPassword}
+                >
+                  {showPasswords.confirmAdminPassword ? '👁️' : '👁️‍🗨️'}
+                </PasswordToggle>
+              </PasswordInputWrapper>
               <Button type="submit" disabled={loading}>
                 Update Credentials
               </Button>
@@ -1015,32 +1394,63 @@ const AdminDashboard = () => {
               Update Guest Access{" "}
             </HeaderTitle>
             <Form onSubmit={handleGuestCredentialsUpdate}>
-              <Input
-                type="text"
-                placeholder="Guest Username"
-                value={guestForm.username}
-                onChange={(e) =>
-                  setGuestForm((prev) => ({
-                    ...prev,
-                    username: e.target.value,
-                  }))
-                }
-                required
-              />
-              <Input
-                type="password"
-                placeholder="Guest Password"
-                value={guestForm.password}
-                onChange={(e) =>
-                  setGuestForm((prev) => ({
-                    ...prev,
-                    password: e.target.value,
-                  }))
-                }
-                required
-              />
+              <PasswordInputWrapper>
+                <Input
+                  type={showPasswords.newGuestPassword ? "text" : "password"}
+                  placeholder="New Guest Password"
+                  value={guestForm.newPassword}
+                  onChange={(e) =>
+                    setGuestForm((prev) => ({
+                      ...prev,
+                      newPassword: e.target.value,
+                    }))
+                  }
+                  required
+                />
+                <PasswordToggle
+                  type="button"
+                  onClick={() => togglePasswordVisibility('newGuestPassword')}
+                >
+                  {showPasswords.newGuestPassword ? '👁️' : '👁️‍🗨️'}
+                </PasswordToggle>
+              </PasswordInputWrapper>
+              <PasswordInputWrapper>
+                <Input
+                  type={showPasswords.confirmGuestPassword ? "text" : "password"}
+                  placeholder="Confirm New Guest Password"
+                  value={guestForm.confirmPassword}
+                  onChange={(e) =>
+                    setGuestForm((prev) => ({
+                      ...prev,
+                      confirmPassword: e.target.value,
+                    }))
+                  }
+                  required
+                />
+                <PasswordToggle
+                  type="button"
+                  onClick={() => togglePasswordVisibility('confirmGuestPassword')}
+                >
+                  {showPasswords.confirmGuestPassword ? '👁️' : '👁️‍🗨️'}
+                </PasswordToggle>
+              </PasswordInputWrapper>
+              <p style={{ 
+                color: '#666', 
+                fontSize: '14px', 
+                margin: '10px 0', 
+                fontStyle: 'italic',
+                textAlign: 'center' 
+              }}>
+                Note: This will create a new guest password that all guests will use.
+                <br />The guest username will remain "PreWedding".
+                <br /><br />
+                When you update the password:
+                <br />1. All previous guest passwords will be deactivated
+                <br />2. Only the new password will work
+                <br />3. Make sure to share the new password with your guests
+              </p>
               <Button type="submit" disabled={loading}>
-                Update Guest Access
+                Update Guest Password
               </Button>
             </Form>
           </Card>
