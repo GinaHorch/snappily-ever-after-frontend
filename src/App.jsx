@@ -10,6 +10,7 @@ import Book from "./components/Book";
 import AdminDashboard from "./components/AdminDashboard";
 import LoginForm from "./components/LoginForm";
 import MemoryUpload from "./components/MemoryUpload";
+import AdminError from "./components/AdminError";
 import styled from "styled-components";
 import { useState, useEffect } from "react";
 import { authService } from "./services/auth";
@@ -88,16 +89,60 @@ const FloralPatternSection = styled.div`
   background-size: cover;
 `;
 
-const ProtectedRoute = ({ children }) => {
-  const isAuthenticated = authService.isAuthenticated();
-  const isAdmin = authService.isAdmin();
+const LoadingOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+`;
 
-  if (!isAuthenticated) {
-    return <Navigate to="/" state={{ requiresAuth: true }} replace />;
+const LoadingSpinner = styled.div`
+  width: 50px;
+  height: 50px;
+  border: 5px solid #9daf89;
+  border-top: 5px solid #2e6f40;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`;
+
+const ProtectedRoute = ({ children }) => {
+  const [isChecking, setIsChecking] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = () => {
+      const isAuthenticated = authService.isAuthenticated();
+      const isAdmin = authService.isAdmin();
+      setIsAuthorized(isAuthenticated && isAdmin);
+      setIsChecking(false);
+    };
+
+    checkAuth();
+    const interval = setInterval(checkAuth, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (isChecking) {
+    return (
+      <LoadingOverlay>
+        <LoadingSpinner />
+      </LoadingOverlay>
+    );
   }
 
-  if (!isAdmin) {
-    return <Navigate to="/" replace />;
+  if (!isAuthorized) {
+    return <Navigate to="/" state={{ requiresAuth: true }} replace />;
   }
 
   return children;
@@ -177,9 +222,11 @@ function AppContent() {
         <Route
           path="/admin"
           element={
-            <ProtectedRoute>
+            isAuthenticated && isAdmin ? (
               <AdminDashboard onLogout={handleLogout} />
-            </ProtectedRoute>
+            ) : (
+              <AdminError />
+            )
           }
         />
       </Routes>
