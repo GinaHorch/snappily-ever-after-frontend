@@ -523,8 +523,7 @@ const SearchBar = styled.input`
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [stats, setStats] = useState({
-    totalImages: 0,
-    totalMessages: 0
+    totalMemories: 0
   });
   const [memories, setMemories] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -561,8 +560,7 @@ const AdminDashboard = () => {
       const images = await galleryService.getAllImages();
       
       setStats({
-        totalImages: images.length,
-        totalMessages: images.filter((img) => img.comment).length
+        totalMemories: images.length
       });
     } catch (error) {
       console.error("Error fetching stats:", error);
@@ -967,12 +965,8 @@ const AdminDashboard = () => {
         <>
           <StatsGrid>
             <StatCard>
-              <h3>Total Photos</h3>
-              <p>{stats.totalImages}</p>
-            </StatCard>
-            <StatCard>
-              <h3>Total Messages</h3>
-              <p>{stats.totalMessages}</p>
+              <h3>Total Memories</h3>
+              <p>{stats.totalMemories}</p>
             </StatCard>
           </StatsGrid>
         </>
