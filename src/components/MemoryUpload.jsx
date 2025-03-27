@@ -346,9 +346,17 @@ const MemoryUpload = ({ onLogin }) => {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      "image/*": [".jpeg", ".jpg", ".png", ".gif"],
+      "image/*": [".jpeg", ".jpg", ".png", ".gif", ".webp"],
     },
-    maxFiles: 1
+    maxSize: 5 * 1024 * 1024, // 5MB in bytes
+    multiple: false,
+    onDropRejected: (rejectedFiles) => {
+      if (rejectedFiles[0]?.errors[0]?.code === 'file-too-large') {
+        setError("File size is too large. Please upload an image smaller than 5MB.");
+      } else if (rejectedFiles[0]?.errors[0]?.code === 'file-invalid-type') {
+        setError("Invalid file type. Please upload a JPEG, PNG, WEBP, or GIF image.");
+      }
+    }
   });
 
   const handleSubmit = async (e) => {
