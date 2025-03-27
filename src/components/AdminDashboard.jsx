@@ -520,11 +520,118 @@ const SearchBar = styled.input`
   }
 `;
 
+const ContributorsSection = styled.div`
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px #6666b3;
+  padding: 20px;
+  margin: 30px auto;
+  max-width: 800px;
+  
+  @media (max-width: 768px) {
+    margin: 20px auto;
+    padding: 15px;
+  }
+`;
+
+const ContributorsTitle = styled.h3`
+  color: #2e6f40;
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.2em;
+  text-transform: uppercase;
+`;
+
+const ContributorsControls = styled.div`
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    gap: 10px;
+  }
+`;
+
+const ContributorsSearch = styled.input`
+  flex: 1;
+  min-width: 200px;
+  padding: 8px 12px;
+  border: 2px solid #2e6f40;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: "Lato", sans-serif;
+
+  &:focus {
+    outline: none;
+    border-color: #1e4a2a;
+  }
+`;
+
+const GroupingToggle = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-family: "Lato", sans-serif;
+  color: #2e6f40;
+  font-size: 14px;
+`;
+
+const SortingInfo = styled.p`
+  text-align: center;
+  color: #666;
+  font-size: 0.9em;
+  margin: 10px 0;
+  font-style: italic;
+`;
+
+const ContributorsList = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  border-radius: 4px;
+`;
+
+const ContributorItem = styled.li`
+  padding: 12px 15px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background-color: #f8f9fa;
+  }
+`;
+
+const ContributorName = styled.span`
+  color: #2e6f40;
+  font-weight: 500;
+`;
+
+const ContributorDate = styled.span`
+  color: #95a5a6;
+  font-size: 0.9em;
+`;
+
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [stats, setStats] = useState({
-    totalMemories: 0
+    totalMemories: 0,
+    contributors: []
   });
+  const [contributorSearch, setContributorSearch] = useState("");
+  const [sortAlphabetically, setSortAlphabetically] = useState(false);
   const [memories, setMemories] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
@@ -559,14 +666,32 @@ const AdminDashboard = () => {
     try {
       const images = await galleryService.getAllImages();
       
+      // Create array of contributors with individual submissions
+      const contributors = images.map(memory => ({
+        name: memory.name,
+        timestamp: memory.uploaded_at,
+        hasImage: memory.image && !memory.image.includes('placeholder'),
+        hasMessage: !!memory.comment
+      }));
+
+      // Sort based on current sorting preference
+      const sortedContributors = sortAlphabetically
+        ? contributors.sort((a, b) => a.name.localeCompare(b.name))
+        : contributors.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      
       setStats({
-        totalMemories: images.length
+        totalMemories: images.length,
+        contributors: sortedContributors
       });
     } catch (error) {
       console.error("Error fetching stats:", error);
       setError("Failed to load statistics. Please try again later.");
     }
   };
+
+  useEffect(() => {
+    fetchStats();
+  }, [sortAlphabetically]);
 
   const fetchMemories = async () => {
     try {
@@ -924,6 +1049,12 @@ const AdminDashboard = () => {
     return true;  
   });
 
+  // Filter contributors based on search
+  const filteredContributors = stats.contributors.filter(contributor => {
+    if (!contributorSearch) return true;
+    return contributor.name.toLowerCase().includes(contributorSearch.toLowerCase());
+  });
+
   return (
     <DashboardContainer>
       <BackLink to="/">← Back to Guestbook</BackLink>
@@ -969,6 +1100,51 @@ const AdminDashboard = () => {
               <p>{stats.totalMemories}</p>
             </StatCard>
           </StatsGrid>
+
+          <ContributorsSection>
+            <ContributorsTitle>Contributors</ContributorsTitle>
+            <ContributorsControls>
+              <ContributorsSearch
+                type="text"
+                placeholder="Search contributors..."
+                value={contributorSearch}
+                onChange={(e) => setContributorSearch(e.target.value)}
+              />
+              <GroupingToggle>
+                <input
+                  type="checkbox"
+                  checked={sortAlphabetically}
+                  onChange={() => setSortAlphabetically(!sortAlphabetically)}
+                />
+                Sort A-Z
+              </GroupingToggle>
+            </ContributorsControls>
+            <SortingInfo>
+              {sortAlphabetically ? 
+                "Sorted alphabetically by name" :
+                "Sorted by most recent first"}
+            </SortingInfo>
+            <ContributorsList>
+              {filteredContributors.length > 0 ? (
+                filteredContributors.map((contributor, index) => (
+                  <ContributorItem 
+                    key={`${contributor.name}_${contributor.timestamp}_${index}`}
+                  >
+                    <ContributorName>
+                      {contributor.name}
+                    </ContributorName>
+                    <ContributorDate>
+                      {new Date(contributor.timestamp).toLocaleDateString()}
+                    </ContributorDate>
+                  </ContributorItem>
+                ))
+              ) : (
+                <ContributorItem>
+                  <ContributorName>No contributors found</ContributorName>
+                </ContributorItem>
+              )}
+            </ContributorsList>
+          </ContributorsSection>
         </>
       )}
 
