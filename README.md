@@ -17,9 +17,10 @@ A beautiful digital wedding guestbook that combines the charm of a traditional b
 ⌨️ Keyboard navigation support  
 
 👑 Admin dashboard includes:  
-- View photo and message statistics  
+- View memory statistics - including searchable list of contributors
+- Gallery management - download photos only or download the whole memory - or delete
 - Update admin and guest credentials  
-- Delete or download individual images from gallery  
+- Delete or download individual images from guestbook gallery  
 
 > ❗ Currently, there is **no export of all guestbook data**. Admin can download or delete images individually.
 
@@ -36,7 +37,7 @@ A beautiful digital wedding guestbook that combines the charm of a traditional b
 - A navigation hint appears for a few seconds upon login
 
 ### Sharing Your Memories
-1. Navigate to the **Share Your Memory** page (first page after cover)
+1. Navigate to the **Share Your Memory** page (/)
 2. Enter your name (required), write a message (optional), and/or upload a photo (optional)
 3. Click "Submit Memory"
 4. Your memory will appear as an individual page titled **A Snap in Time**
@@ -50,8 +51,9 @@ Access by:
 - Using admin credentials
 
 Dashboard features:
-- View count of uploaded messages and photos
+- View count of uploaded memories
 - Change admin and guest credentials
+- Delete or download images and/or memories from Gallery Management
 - Delete or download individual images from the gallery
 
 ## Technical Details

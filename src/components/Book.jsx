@@ -1046,7 +1046,7 @@ const Book = ({ onLogin }) => {
       {isAuthenticated && !isAdmin && (
         <LogoutButton onClick={() => {
           authService.logout();
-          window.location.reload();
+          navigate('/');
         }}>
           Logout
         </LogoutButton>
