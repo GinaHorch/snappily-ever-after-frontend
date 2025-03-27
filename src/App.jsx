@@ -157,6 +157,10 @@ function AppContent() {
             top: 0,
             left: 0,
             zIndex: 0,
+            canvas: {
+              maxWidth: "100dvw",
+              overflowX: "hidden"
+            }
           }}
         />
       )}
