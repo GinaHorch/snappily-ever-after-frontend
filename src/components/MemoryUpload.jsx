@@ -374,7 +374,7 @@ const MemoryUpload = ({ onLogin }) => {
     try {
       const response = await galleryService.uploadImage({
         imageFile: image || null,
-        comment: message.trim() || null,
+        comment: message.trim() || "",
         name: guestName.trim(),
       });
 

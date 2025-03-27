@@ -938,15 +938,28 @@ const AdminDashboard = () => {
     }
   };
 
-  const filteredMemories = memories
-    .filter(memory => {
-      const matchesSearch = memory.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          (memory.comment || "").toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredMemories = memories.filter(memory => {
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      const matchesSearch = 
+        memory.name.toLowerCase().includes(searchLower) ||
+        (memory.comment && memory.comment.toLowerCase().includes(searchLower));
       
-      if (filter === "photos") return matchesSearch && memory.image && !memory.image.includes('placeholder');
-      if (filter === "messages") return matchesSearch && memory.comment;
-      return matchesSearch;
-    });
+      if (!matchesSearch) return false;
+    }
+  
+    switch (filter) {
+      case 'photos':
+        // Show entries that have photos (regardless of messages)
+        return memory.image && !memory.image.includes('placeholder');
+      case 'messages':
+        // Show entries that have ONLY messages (no photos)
+        return memory.comment && (!memory.image || memory.image.includes('placeholder'));
+      default:
+        // Show all entries
+        return true;
+    }
+  });
 
   return (
     <DashboardContainer>

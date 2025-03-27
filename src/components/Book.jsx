@@ -860,7 +860,7 @@ const Book = ({ onLogin }) => {
                       <>
                         <MemoryImage src={submission.image} alt={`Memory from ${submission.name}`} />
                         <MemoryMessage>
-                          {submission.comment || "Captured a beautiful moment!"}
+                          {submission.comment === null ? `A beautiful moment captured by ${submission.name}` : submission.comment}
                         </MemoryMessage>
                       </>
                     ) : (
