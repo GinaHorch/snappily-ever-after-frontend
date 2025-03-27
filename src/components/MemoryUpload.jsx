@@ -470,7 +470,7 @@ const MemoryUpload = ({ onLogin }) => {
                 {preview ? (
                   <PreviewImage src={preview} alt="Preview" />
                 ) : (
-                  <p>Drag & drop your photo here, or click to select one photo at a time</p>
+                  <p>Click to add a photo - max size 5MB</p>
                 )}
               </DropZone>
 
