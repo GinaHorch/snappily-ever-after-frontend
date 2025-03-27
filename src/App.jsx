@@ -4,7 +4,8 @@ import {
   Route,
   Navigate,
   Link,
-  useLocation
+  useLocation,
+  useNavigate
 } from "react-router-dom";
 import Book from "./components/Book";
 import AdminDashboard from "./components/AdminDashboard";
@@ -153,6 +154,7 @@ function AppContent() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const checkAuth = () => {
     const authenticated = authService.isAuthenticated();
@@ -179,6 +181,7 @@ function AppContent() {
   const handleLogout = () => {
     authService.logout();
     checkAuth();
+    navigate('/'); // Navigate to home page which shows the login form
   };
 
   const windowWidth = window.innerWidth;

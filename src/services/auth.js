@@ -57,15 +57,45 @@ export const authService = {
   },
 
   // Admin only: Update guest credentials
-  updateGuestCredentials: async (username, password) => {
+  updateGuestCredentials: async (username, currentPassword, newPassword) => {
     try {
-      const response = await api.put('/users/update-guest/', {
-        username,
-        password,
+      const data = {
+        username: username,  // This will be 'PreWedding'
+        password: newPassword  // The new guest password
+      };
+
+      console.log('Guest credential update - Full request details:', {
+        url: '/update-guest/',
+        method: 'PUT',
+        headers: {
+          ...api.defaults.headers,
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        },
+        data: {
+          ...data,
+          password: '***'
+        }
       });
+
+      const response = await api.put('/update-guest/', data);
       return response.data;
     } catch (error) {
-      throw error.response?.data || { error: 'Failed to update guest credentials' };
+      // Log the full error response for debugging
+      console.error('Guest credential update error details:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message,
+        requestData: error.config?.data ? JSON.parse(error.config.data) : null,
+        headers: error.config?.headers
+      });
+      
+      // Extract error message from response if available
+      const errorMessage = error.response?.data?.error || 
+                         error.response?.data?.message ||
+                         'Failed to update guest credentials';
+      
+      throw { error: errorMessage };
     }
   },
 

@@ -624,7 +624,67 @@ const ContributorDate = styled.span`
   font-size: 0.9em;
 `;
 
-const AdminDashboard = () => {
+const LogoutButton = styled.button`
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 8px 16px;
+  background-color: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: "Lato", sans-serif;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  @media (max-width: 480px) {
+    padding: 6px 12px;
+    font-size: 13px;
+    top: 15px;
+    right: 15px;
+  }
+
+  &:hover {
+    background-color: #b91c1c;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  &::before {
+    content: "🚪";
+    font-size: 16px;
+  }
+`;
+
+const PasswordInputWrapper = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
+const PasswordToggle = styled.button`
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  padding: 5px;
+  font-size: 14px;
+
+  &:hover {
+    color: #2e6f40;
+  }
+`;
+
+const AdminDashboard = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState("overview");
   const [stats, setStats] = useState({
     totalMemories: 0,
@@ -648,8 +708,17 @@ const AdminDashboard = () => {
 
   // Guest credentials form
   const [guestForm, setGuestForm] = useState({
-    username: "",
-    password: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+
+  const [showPasswords, setShowPasswords] = useState({
+    currentGuestPassword: false,
+    newGuestPassword: false,
+    confirmGuestPassword: false,
+    currentAdminPassword: false,
+    newAdminPassword: false,
+    confirmAdminPassword: false
   });
 
   useEffect(() => {
@@ -748,17 +817,34 @@ const AdminDashboard = () => {
     setError("");
     setSuccess("");
 
+    // Validate passwords match
+    if (guestForm.newPassword !== guestForm.confirmPassword) {
+      setError("New passwords do not match");
+      return;
+    }
+
+    // Validate password length
+    if (guestForm.newPassword.length < 4) {
+      setError("New password must be at least 4 characters long");
+      return;
+    }
+
     try {
       setLoading(true);
       await authService.updateGuestCredentials(
-        guestForm.username,
-        guestForm.password
+        "PreWedding",  // Fixed username
+        null,  // We don't need the admin password anymore
+        guestForm.newPassword  // New guest password
       );
-      setSuccess("Guest credentials updated successfully");
-      setGuestForm({ username: "", password: "" });
+      setSuccess("Guest password updated successfully! Make sure to share the new password with your guests.");
+      setGuestForm({ 
+        newPassword: "", 
+        confirmPassword: "" 
+      });
       fetchStats(); // Refresh stats
     } catch (err) {
-      setError(err.error || "Failed to update guest credentials");
+      console.error('Error updating guest credentials:', err);
+      setError(err.error || "Failed to update guest password. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -1055,8 +1141,18 @@ const AdminDashboard = () => {
     return contributor.name.toLowerCase().includes(contributorSearch.toLowerCase());
   });
 
+  const togglePasswordVisibility = (field) => {
+    setShowPasswords(prev => ({
+      ...prev,
+      [field]: !prev[field]
+    }));
+  };
+
   return (
     <DashboardContainer>
+      <LogoutButton onClick={onLogout}>
+        Logout
+      </LogoutButton>
       <BackLink to="/">← Back to Guestbook</BackLink>
       <Header>
         <TitleContainer>
@@ -1215,18 +1311,26 @@ const AdminDashboard = () => {
               Update Admin Credentials{" "}
             </HeaderTitle>
             <Form onSubmit={handlePasswordChange}>
-              <Input
-                type="password"
-                placeholder="Current Password"
-                value={passwordForm.oldPassword}
-                onChange={(e) =>
-                  setPasswordForm((prev) => ({
-                    ...prev,
-                    oldPassword: e.target.value,
-                  }))
-                }
-                required
-              />
+              <PasswordInputWrapper>
+                <Input
+                  type={showPasswords.currentAdminPassword ? "text" : "password"}
+                  placeholder="Current Password"
+                  value={passwordForm.oldPassword}
+                  onChange={(e) =>
+                    setPasswordForm((prev) => ({
+                      ...prev,
+                      oldPassword: e.target.value,
+                    }))
+                  }
+                  required
+                />
+                <PasswordToggle
+                  type="button"
+                  onClick={() => togglePasswordVisibility('currentAdminPassword')}
+                >
+                  {showPasswords.currentAdminPassword ? '👁️' : '👁️‍🗨️'}
+                </PasswordToggle>
+              </PasswordInputWrapper>
               <Input
                 type="text"
                 placeholder="New Username (optional)"
@@ -1238,30 +1342,47 @@ const AdminDashboard = () => {
                   }))
                 }
               />
-              <Input
-                type="password"
-                placeholder="New Password (optional)"
-                value={passwordForm.newPassword}
-                onChange={(e) =>
-                  setPasswordForm((prev) => ({
-                    ...prev,
-                    newPassword: e.target.value,
-                  }))
-                }
-              />
-              <Input
-                type="password"
-                placeholder="Confirm New Password"
-                value={passwordForm.confirmPassword}
-                onChange={(e) =>
-                  setPasswordForm((prev) => ({
-                    ...prev,
-                    confirmPassword: e.target.value,
-                  }))
-                }
-                disabled={!passwordForm.newPassword}
-                required={!!passwordForm.newPassword}
-              />
+              <PasswordInputWrapper>
+                <Input
+                  type={showPasswords.newAdminPassword ? "text" : "password"}
+                  placeholder="New Password (optional)"
+                  value={passwordForm.newPassword}
+                  onChange={(e) =>
+                    setPasswordForm((prev) => ({
+                      ...prev,
+                      newPassword: e.target.value,
+                    }))
+                  }
+                />
+                <PasswordToggle
+                  type="button"
+                  onClick={() => togglePasswordVisibility('newAdminPassword')}
+                >
+                  {showPasswords.newAdminPassword ? '👁️' : '👁️‍🗨️'}
+                </PasswordToggle>
+              </PasswordInputWrapper>
+              <PasswordInputWrapper>
+                <Input
+                  type={showPasswords.confirmAdminPassword ? "text" : "password"}
+                  placeholder="Confirm New Password"
+                  value={passwordForm.confirmPassword}
+                  onChange={(e) =>
+                    setPasswordForm((prev) => ({
+                      ...prev,
+                      confirmPassword: e.target.value,
+                    }))
+                  }
+                  disabled={!passwordForm.newPassword}
+                  required={!!passwordForm.newPassword}
+                />
+                <PasswordToggle
+                  type="button"
+                  onClick={() => togglePasswordVisibility('confirmAdminPassword')}
+                  disabled={!passwordForm.newPassword}
+                >
+                  {showPasswords.confirmAdminPassword ? '👁️' : '👁️‍🗨️'}
+                </PasswordToggle>
+              </PasswordInputWrapper>
               <Button type="submit" disabled={loading}>
                 Update Credentials
               </Button>
@@ -1273,32 +1394,63 @@ const AdminDashboard = () => {
               Update Guest Access{" "}
             </HeaderTitle>
             <Form onSubmit={handleGuestCredentialsUpdate}>
-              <Input
-                type="text"
-                placeholder="Guest Username"
-                value={guestForm.username}
-                onChange={(e) =>
-                  setGuestForm((prev) => ({
-                    ...prev,
-                    username: e.target.value,
-                  }))
-                }
-                required
-              />
-              <Input
-                type="password"
-                placeholder="Guest Password"
-                value={guestForm.password}
-                onChange={(e) =>
-                  setGuestForm((prev) => ({
-                    ...prev,
-                    password: e.target.value,
-                  }))
-                }
-                required
-              />
+              <PasswordInputWrapper>
+                <Input
+                  type={showPasswords.newGuestPassword ? "text" : "password"}
+                  placeholder="New Guest Password"
+                  value={guestForm.newPassword}
+                  onChange={(e) =>
+                    setGuestForm((prev) => ({
+                      ...prev,
+                      newPassword: e.target.value,
+                    }))
+                  }
+                  required
+                />
+                <PasswordToggle
+                  type="button"
+                  onClick={() => togglePasswordVisibility('newGuestPassword')}
+                >
+                  {showPasswords.newGuestPassword ? '👁️' : '👁️‍🗨️'}
+                </PasswordToggle>
+              </PasswordInputWrapper>
+              <PasswordInputWrapper>
+                <Input
+                  type={showPasswords.confirmGuestPassword ? "text" : "password"}
+                  placeholder="Confirm New Guest Password"
+                  value={guestForm.confirmPassword}
+                  onChange={(e) =>
+                    setGuestForm((prev) => ({
+                      ...prev,
+                      confirmPassword: e.target.value,
+                    }))
+                  }
+                  required
+                />
+                <PasswordToggle
+                  type="button"
+                  onClick={() => togglePasswordVisibility('confirmGuestPassword')}
+                >
+                  {showPasswords.confirmGuestPassword ? '👁️' : '👁️‍🗨️'}
+                </PasswordToggle>
+              </PasswordInputWrapper>
+              <p style={{ 
+                color: '#666', 
+                fontSize: '14px', 
+                margin: '10px 0', 
+                fontStyle: 'italic',
+                textAlign: 'center' 
+              }}>
+                Note: This will create a new guest password that all guests will use.
+                <br />The guest username will remain "PreWedding".
+                <br /><br />
+                When you update the password:
+                <br />1. All previous guest passwords will be deactivated
+                <br />2. Only the new password will work
+                <br />3. Make sure to share the new password with your guests
+              </p>
               <Button type="submit" disabled={loading}>
-                Update Guest Access
+                Update Guest Password
               </Button>
             </Form>
           </Card>
